@@ -9,14 +9,18 @@ class State
 {
 public:
 	State(int dimension);
+	
+	State(const State& other);
 
-	void print() {
-		std::cout << board << std::endl;
-	}
+	~State();
 
-	std::vector<State> get_children();
+	void print();
+
+	std::vector<State>* get_children();
 
 	bool isFinal();
+
+	int getScore();
 
 	bool operator==(const State& other) const;
 
@@ -25,11 +29,11 @@ public:
 	};
 	
 private:
-	Board *board;
-	int curr_x, curr_y, queens_added;
+	bool *data;
+	int dimension, score;
 
-	State* father;
+	State *father;
 
-	bool add_at_column(int column);
+	void evaluate();
 };
 
