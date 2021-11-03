@@ -5,3 +5,6 @@
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+# visual studio build directories
+Debug/
