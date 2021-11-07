@@ -25,9 +25,8 @@ public:
 	struct HashFunction {
 		size_t operator()(const State& state) const;
 	};
-	
+
 private:
-public:
 	bool *data;
 	int dimension, score;
 

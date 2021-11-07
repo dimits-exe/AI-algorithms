@@ -61,6 +61,11 @@ std::vector<State*>* State::get_children()
 	return children;
 }
 
+State* State::get_father()
+{
+	return father;
+}
+
 bool State::isFinal()
 {
 	return getScore() == 0;
