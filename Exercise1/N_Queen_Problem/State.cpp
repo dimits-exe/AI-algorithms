@@ -137,3 +137,71 @@ size_t State::HashFunction::operator()(const State& state) const
 	return hash;
 }
 
+State::ChildrenIterator State::begin()
+{
+	return ChildrenIterator(*this);
+}
+
+State::ChildrenIterator State::end()
+{
+	ChildrenIterator iter = ChildrenIterator(*this);
+	for (int i = 0, count = this->dimension * this->dimension; i < count; i++)
+		iter++;
+	return iter;
+}
+
+State::ChildrenIterator::ChildrenIterator(const State& state)
+	: original_state(state), generated_state(nullptr), dim(state.dimension), cx(0), cy(0), qy(0), data(state.data) { }
+
+State::ChildrenIterator& State::ChildrenIterator::operator++()
+{
+	generated_state = nullptr;
+	cx++;
+	if (cx >= dim) {
+		cx = 0;
+		cy++;
+		qy = -1;
+	}
+	return *this;
+}
+
+State::ChildrenIterator State::ChildrenIterator::operator++(int)
+{
+	generated_state = nullptr;
+	ChildrenIterator temp(*this);
+	operator++();
+	return temp;
+}
+
+bool State::ChildrenIterator::operator==(const ChildrenIterator& rhs)
+{
+	return original_state == rhs.original_state && dim == rhs.dim && cx == rhs.cx && cy == rhs.cy;
+}
+
+bool State::ChildrenIterator::operator!=(const ChildrenIterator& rhs)
+{
+	return !this->operator==(rhs);
+}
+
+State* State::ChildrenIterator::operator*()
+{
+	if (generated_state != nullptr)
+		return generated_state;
+
+	if (qy == -1) {
+		for (qy = 0; original_state.data[cx * dim + qy] == 0 && qy < dim + 1; qy++)
+			;
+
+		if (qy == dim)
+			std::cout << "bad queen at row " << cx << std::endl;
+	}
+
+	original_state.data[cx * dim + qy] = 0;
+	original_state.data[cx * dim + cy] = 1;
+	generated_state = new State(dim, original_state.data);
+	original_state.data[cx * dim + cy] = 0;
+	original_state.data[cx * dim + qy] = 1;
+
+	return generated_state;
+}
+
