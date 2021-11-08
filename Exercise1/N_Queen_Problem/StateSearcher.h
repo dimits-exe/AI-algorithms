@@ -7,11 +7,11 @@ class StateSearcher
 public:
 	static State* HillClimbing(State*);
 
-	static State* HCSideSteps(State*);
+	static State* HCSideSteps(State*, int);
 
 	static State* HCFirstChoice(State*);
 
-	static State* HCRandomRestarts(State*);
+	static State* HCRandomRestarts(int dim, int retries);
 	
 	static State* HCStochastic(State*);
 };

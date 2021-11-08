@@ -8,6 +8,8 @@ class State
 	class ChildrenIterator;
 
 public:
+	static State* random(int dimension);
+
 	State(int dimension);
 	State(int dimension, bool* data);
 	State(const State& other);

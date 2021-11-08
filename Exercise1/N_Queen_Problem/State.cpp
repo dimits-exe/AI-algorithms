@@ -1,5 +1,18 @@
 #include "State.h"
+#include <time.h>
 #include <math.h>
+
+State* State::random(int dimension)
+{
+	srand((unsigned)time(NULL));
+
+	State* state = new State(dimension);
+	for (int i = 0; i < dimension; i++) {
+		int col = rand() % dimension;
+		state->data[i * dimension + col] = 1;
+	}
+	return state;
+}
 
 State::State(int dimension) : data(new bool[dimension * dimension]), dimension(dimension), score(0), father(nullptr) { }
 
@@ -151,7 +164,7 @@ State::ChildrenIterator State::end()
 }
 
 State::ChildrenIterator::ChildrenIterator(const State& state)
-	: original_state(state), generated_state(nullptr), dim(state.dimension), cx(0), cy(0), qy(0), data(state.data) { }
+	: original_state(state), generated_state(nullptr), dim(state.dimension), cx(0), cy(0), qy(0) { }
 
 State::ChildrenIterator& State::ChildrenIterator::operator++()
 {
