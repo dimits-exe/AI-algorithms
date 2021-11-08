@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <vector>
+#include <list>
 
 class State
 {
@@ -18,7 +18,7 @@ public:
 
 	void print();
 
-	std::vector<State*>* get_children();
+	std::list<State*>* get_children();
 
 	State* get_father();
 

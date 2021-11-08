@@ -1,4 +1,6 @@
 #include "StateSearcher.h"
+#include <time.h>
+#include <list>
 
 State *StateSearcher::HillClimbing(State *initial_state)
 {
@@ -33,7 +35,7 @@ State* StateSearcher::HCSideSteps(State* initial_state, int side_steps)
 	bool exists_larger = true;
 	while (exists_larger) {
 
-		std::list<State*> neighbours
+		std::list<State*> neighbours;
 
 		exists_larger = false;
 		State *largest = current;
@@ -90,5 +92,51 @@ State* StateSearcher::HCRandomRestarts(int dim, int retries)
 			largest = state;
 	}
 	return largest;
+}
+
+State* StateSearcher::HCStochastic(State *initial_state)
+{
+	srand((unsigned)time(NULL));
+
+	State* current = initial_state;
+	std::list<State*> bigger_children;
+
+	bool exists_larger = true;
+	while (exists_larger) {
+
+		std::list<State*> *children = current->get_children();
+
+		for (State *s : *children) {
+			if (s->getScore() > current->getScore())
+				bigger_children.push_back(s);
+			else
+				delete s;
+		}
+
+		exists_larger = !bigger_children.empty();
+
+		bigger_children.sort();
+		int total_score = 0;
+		for (auto iter = bigger_children.begin(); iter != bigger_children.end(); iter++)
+			total_score += (*iter)->getScore();
+
+		int target = rand() % total_score;
+		int running_score = 0;
+		for (auto iter = bigger_children.begin(); iter != bigger_children.end(); iter++) {
+			State* temp = *iter;
+			running_score += temp->getScore();
+			if (running_score > target) {
+				current = temp;
+				break;
+			}
+		}
+
+		for (State* s : bigger_children)
+			if (s != current)
+				delete s;
+		bigger_children.clear();
+	}
+
+	return current;
 }
 

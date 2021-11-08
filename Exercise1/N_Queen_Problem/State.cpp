@@ -44,11 +44,11 @@ void State::print()
 	}
 }
 
-std::vector<State*>* State::get_children()
+std::list<State*>* State::get_children()
 {
 	int dim = this->dimension;
 
-	std::vector<State*>* children = new std::vector<State*>();
+	std::list<State*>* children = new std::list<State*>();
 	for (int row = 0; row < dim; row++) {
 
 		int queen_col;
