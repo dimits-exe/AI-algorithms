@@ -1,11 +1,12 @@
 #pragma once
 #include <stdexcept>
+#include <limits>
 
 /*
 An immutable x-y value pair referencing a square in the board.
 Supports tagging a position as 'invalid', as a return value.
 */
-struct Position {
+class Position {
 
 public:
 
@@ -14,7 +15,7 @@ public:
 	}
 
 	static bool is_invalid(Position p) {
-		return p.X() == INVALID_VALUE && p.Y() == INVALID_VALUE;
+		return p.x == INVALID_VALUE || p.y == INVALID_VALUE;
 	}
 
 	Position(int x, int y) : x(x), y(y){}
