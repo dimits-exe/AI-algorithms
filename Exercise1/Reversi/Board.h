@@ -1,12 +1,12 @@
 #pragma once
+
 #include <vector>
 #include <list>
 #include <utility>
-
 #include "Position.h"
 
 /*An enum describing who occupies a certain square.*/
-enum class PLAYER : char { EMPTY = ' ', PLAYER1 = '1', PLAYER2 = '2' }; //define these are constants?
+enum class PLAYER : char { EMPTY = '-', PLAYER1 = '1', PLAYER2 = '2' }; //define these are constants?
 
 inline PLAYER nextTurn(PLAYER currentTurn) {
 	if (currentTurn == PLAYER::PLAYER1)
@@ -65,23 +65,23 @@ private:
 	Get a pair containing the furthest pair of player controlled squares in a line.
 	Returns an invalid position if a pair isn't found.
 	*/
-	std::pair<Position, Position> limits_in_x(PLAYER p, int line) const;
+	static std::pair<Position, Position> limits_in_x(PLAYER p, std::vector<std::vector<PLAYER>>& board, int line);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in a row.
 	Returns an invalid position if a pair isn't found.
 	*/
-	std::pair<Position, Position> limits_in_y(PLAYER p, int row) const;
+	static std::pair<Position, Position> limits_in_y(PLAYER p, std::vector<std::vector<PLAYER>>& board, int row);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in the move's square's
 	main diagonal. Returns an invalid position if a pair isn't found.
 	*/
-	std::pair<Position, Position> limits_in_main_diag(PLAYER, Position) const;
+	static std::pair<Position, Position> limits_in_main_diag(PLAYER, std::vector<std::vector<PLAYER>>& board, Position);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in the move's square's
 	secondary diagonal. Returns an invalid position if a pair isn't found.
 	*/
-	std::pair<Position, Position> limits_in_sec_diag(PLAYER, Position) const;
+	static std::pair<Position, Position> limits_in_sec_diag(PLAYER, std::vector<std::vector<PLAYER>>& board, Position);
 };
