@@ -1,7 +1,6 @@
-#include <string> 
-#include <math.h>
-
 #include "Board.h"
+#include <string> 
+//#include <iostream> //delete
 
 using namespace std;
 
@@ -10,12 +9,12 @@ Board::Board(int size):DIMENSION(size) {
 	for (int i = 0; i < DIMENSION; i++) {
 		this->gameBoard.push_back(vector<PLAYER>(size));
 		for (int j = 0; j < DIMENSION; j++) {
-			this->gameBoard[i].push_back(PLAYER::EMPTY);
+			this->gameBoard[i][j] = PLAYER::EMPTY;
 		}
 	}
 
-	//initial board setupa 
-	Position middleSquare(DIMENSION/2, DIMENSION/2);
+	//initial board setup
+	Position middleSquare((DIMENSION - 1)/2, (DIMENSION - 1) /2);
 	gameBoard[middleSquare.X()][middleSquare.Y()] = PLAYER::PLAYER1;
 	gameBoard[middleSquare.X()+1][middleSquare.Y()+1] = PLAYER::PLAYER1;
 	gameBoard[middleSquare.X()+1][middleSquare.Y()] = PLAYER::PLAYER2;
@@ -37,7 +36,7 @@ list<Position> Board::getValidMoves(PLAYER p) const{
 
 	//exhaust all options, fuck performance
 	for (int i = 0; i < DIMENSION;i++) {
-		for (int j = 0; i < DIMENSION;j++) {
+		for (int j = 0; j < DIMENSION;j++) {
 
 			Position move(i, j);
 			if (isValidMove(p, move)) {
@@ -52,26 +51,47 @@ list<Position> Board::getValidMoves(PLAYER p) const{
 	return ls; 
 }
 
-bool Board::isValidMove(PLAYER p, Position move) const{
+bool Board::isValidMove(PLAYER p, Position move) const {
 	if (!IsRangeValid(move))
 		return false;
 
-	if (gameBoard[move.X()][move.Y()] != PLAYER::EMPTY)
+	if (gameBoard[move.Y()][move.X()] != PLAYER::EMPTY)
 		return false;
 
-	if (Position::is_invalid(limits_in_x(p, move.Y()).first) ||
-		Position::is_invalid(limits_in_y(p, move.X()).first) ||
-		Position::is_invalid(limits_in_main_diag(p, move).first) ||
-		Position::is_invalid(limits_in_sec_diag(p, move).first))
-		return false;
+	vector<vector<PLAYER>> testBoard(gameBoard);
 
+	testBoard[move.Y()][move.X()] = p;
+
+	/*
+	string str;
+
+	for (int i = 0; i < DIMENSION; i++) {
+		for (int j = 0; j < DIMENSION; j++) {
+			str += static_cast<char>(gameBoard[i][j]); //append player character
+			str += " ";
+		}
+		str += "\n";
+	}
+	cout << str;
+	*/
+
+	if (Position::is_invalid(limits_in_x(p, testBoard, move.Y()).first) ||
+		Position::is_invalid(limits_in_y(p, testBoard, move.X()).first) ||
+		Position::is_invalid(limits_in_main_diag(p, testBoard, move).first) ||
+		Position::is_invalid(limits_in_sec_diag(p, testBoard, move).first)) {
+		testBoard[move.Y()][move.X()] = PLAYER::EMPTY;
+		return false;
+	}
+		
 	return true;
 }
 
 void Board::makeMove(PLAYER p, Position move) {
 	bool pair_exists = false;
 
-	pair<Position, Position> x_axis = limits_in_x(p, move.Y());
+	gameBoard[move.X()][move.Y()] = p;
+
+	pair<Position, Position> x_axis = limits_in_x(p, gameBoard, move.Y());
 	if (!Position::is_invalid(x_axis.first)) { 
 		//if a pair was found
 		pair_exists = true;
@@ -81,7 +101,7 @@ void Board::makeMove(PLAYER p, Position move) {
 		}
 	}
 
-	pair<Position, Position> y_axis = limits_in_y(p, move.X());
+	pair<Position, Position> y_axis = limits_in_y(p, gameBoard, move.X());
 	if (!Position::is_invalid(y_axis.first)) {
 		//if a pair was found
 		pair_exists = true;
@@ -91,7 +111,7 @@ void Board::makeMove(PLAYER p, Position move) {
 		}
 	}
 
-	pair<Position, Position> main_diag = limits_in_main_diag(p, move);
+	pair<Position, Position> main_diag = limits_in_main_diag(p, gameBoard, move);
 	if (!Position::is_invalid(main_diag.first)) {
 		//if a pair was found
 		pair_exists = true;
@@ -105,7 +125,7 @@ void Board::makeMove(PLAYER p, Position move) {
 		}
 	}
 
-	pair<Position, Position> sec_diag = limits_in_sec_diag(p, move);
+	pair<Position, Position> sec_diag = limits_in_sec_diag(p, gameBoard, move);
 	if (!Position::is_invalid(sec_diag.first)) {
 		//if a pair was found
 		pair_exists = true;
@@ -119,19 +139,22 @@ void Board::makeMove(PLAYER p, Position move) {
 		}
 	}
 
-	if (!pair_exists)
+	if (!pair_exists) {
+		gameBoard[move.X()][move.Y()] = PLAYER::EMPTY;
 		throw logic_error("Invalid move " + std::to_string(move.X()) + "-" + std::to_string(move.Y()));
+	}
+		
 }
 
 double Board::hashcode() const {
-	double result = 0;
+	string str;
 
 	for (int i = 0; i < DIMENSION; i++) {
 		for (int j = 0; j < DIMENSION; j++) {
-			result += pow(DIMENSION, (DIMENSION * i) + j) * (int) static_cast<char>(gameBoard[i][j]);
+			str += static_cast<char>(gameBoard[i][j]);
 		}
 	}
-	return result;
+	return hash<std::string>()(str);
 }
 
 int Board::getScore(PLAYER p) const {
@@ -147,8 +170,10 @@ int Board::getScore(PLAYER p) const {
 			switch (gameBoard[i][j]) {
 			case PLAYER::PLAYER1:
 				pl1Count++;
+				break;
 			case PLAYER::PLAYER2:
 				pl2Count++;
+				break;
 			}
 
 		}
@@ -169,6 +194,7 @@ string Board::toString() const {
 	for (int i = 0; i < DIMENSION; i++) {
 		for (int j = 0; j < DIMENSION; j++) {
 			str += static_cast<char>(gameBoard[i][j]); //append player character
+			str += " ";
 		}
 		str += "\n";
 	}
@@ -178,18 +204,18 @@ string Board::toString() const {
 }
 
 bool Board::IsRangeValid(Position move) const {
-	return move.X() > DIMENSION || move.Y() > DIMENSION
-		|| move.X() < 0 || move.Y() < 0;
+	return move.X() < DIMENSION && move.Y() < DIMENSION
+		&& move.X() >= 0 && move.Y() >= 0;
 }
 
 //code duplication lololololol
 
-pair<Position, Position> Board::limits_in_x(PLAYER p, int line) const {
+pair<Position, Position> Board::limits_in_x(PLAYER p, vector<vector<PLAYER>>& board, int line)  {
 	int x_start = -1;
 	int x_end = -1;
 
-	for (int i = 0; i < DIMENSION; i++) {
-		if (gameBoard[line][i] == p) {
+	for (int i = 0; i < board.size(); i++) {
+		if (board[line][i] == p) {
 
 			if (x_start == -1) {
 				x_start = i;
@@ -207,12 +233,12 @@ pair<Position, Position> Board::limits_in_x(PLAYER p, int line) const {
 		return pair<Position, Position>(Position(x_start, line), Position(x_end, line));
 }
 
-pair<Position, Position> Board::limits_in_y(PLAYER p, int row) const {
+pair<Position, Position> Board::limits_in_y(PLAYER p, vector<vector<PLAYER>>& board, int row) {
 	int y_start = -1;
 	int y_end = -1;
 
-	for (int i = 0; i < DIMENSION; i++) {
-		if (gameBoard[i][row] == p) {
+	for (int i = 0; i < board.size(); i++) {
+		if (board[i][row] == p) {
 
 			if (y_start == -1) {
 				y_start = i;
@@ -230,7 +256,8 @@ pair<Position, Position> Board::limits_in_y(PLAYER p, int row) const {
 		return pair<Position, Position>(Position(row, y_start), Position(row, y_end));
 }
 
-pair<Position, Position> Board::limits_in_main_diag(PLAYER player, Position pos) const {
+//TODO FIX STARTING VALUES
+pair<Position, Position> Board::limits_in_main_diag(PLAYER player, vector<vector<PLAYER>>& board, Position pos) {
 	int x_start = -1;
 	int x_end = -1;
 	int y_start = -1;
@@ -250,8 +277,8 @@ pair<Position, Position> Board::limits_in_main_diag(PLAYER player, Position pos)
 	}
 
 	//start scanning
-	while (curr_x < DIMENSION && curr_y < DIMENSION) {
-		if (gameBoard[curr_y][curr_x] == player) {
+	while (curr_x < board.size() && curr_y < board.size()) {
+		if (board[curr_y][curr_x] == player) {
 
 			if (x_start == -1) {
 				x_start = curr_x;
@@ -273,7 +300,8 @@ pair<Position, Position> Board::limits_in_main_diag(PLAYER player, Position pos)
 		return pair<Position, Position>(Position(x_start, y_start), Position(x_end, y_end));
 }
 
-pair<Position, Position> Board::limits_in_sec_diag(PLAYER player, Position pos) const {
+//TODO FIX STARTING VALUES
+pair<Position, Position> Board::limits_in_sec_diag(PLAYER player, vector<vector<PLAYER>>& board, Position pos) {
 	int x_start = -1;
 	int x_end = -1;
 	int y_start = -1;
@@ -284,17 +312,17 @@ pair<Position, Position> Board::limits_in_sec_diag(PLAYER player, Position pos) 
 
 	//find start of diagonals
 	if (pos.X() > pos.Y()) {
-		curr_x = DIMENSION;
-		curr_y = DIMENSION - pos.X();
+		curr_x = 0;
+		curr_y = board.size() - pos.X() - 1;
 	}
 	else {
-		curr_x = DIMENSION - pos.Y();
-		curr_y = DIMENSION;
+		curr_x = board.size() - pos.Y() - 1;
+		curr_y = board.size() - 1;
 	}
 
 	//start scanning
-	while (curr_x < DIMENSION && curr_y < DIMENSION) {
-		if (gameBoard[curr_y][curr_x] == player) {
+	while (curr_x < board.size() && curr_y < board.size()) {
+		if (board[curr_y][curr_x] == player) {
 
 			if (x_start == -1) {
 				x_start = curr_x;
@@ -307,7 +335,7 @@ pair<Position, Position> Board::limits_in_sec_diag(PLAYER player, Position pos) 
 
 		}
 		curr_x++;
-		curr_y--;
+		curr_y++;
 	}
 
 	if (y_end == -1) //if y_start == -1 then always y_end == -1
