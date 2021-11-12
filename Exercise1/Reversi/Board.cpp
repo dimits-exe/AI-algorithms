@@ -1,6 +1,5 @@
 #include "Board.h"
 #include <string> 
-//#include <iostream> //delete
 
 using namespace std;
 
@@ -61,19 +60,6 @@ bool Board::isValidMove(PLAYER p, Position move) const {
 	vector<vector<PLAYER>> testBoard(gameBoard);
 
 	testBoard[move.Y()][move.X()] = p;
-
-	/*
-	string str;
-
-	for (int i = 0; i < DIMENSION; i++) {
-		for (int j = 0; j < DIMENSION; j++) {
-			str += static_cast<char>(gameBoard[i][j]); //append player character
-			str += " ";
-		}
-		str += "\n";
-	}
-	cout << str;
-	*/
 
 	if (Position::is_invalid(limits_in_x(p, testBoard, move.Y()).first) ||
 		Position::is_invalid(limits_in_y(p, testBoard, move.X()).first) ||
@@ -313,15 +299,15 @@ pair<Position, Position> Board::limits_in_sec_diag(PLAYER player, vector<vector<
 	//find start of diagonals
 	if (pos.X() > pos.Y()) {
 		curr_x = 0;
-		curr_y = board.size() - pos.X() - 1;
+		curr_y = pos.Y() + pos.X();
 	}
 	else {
-		curr_x = board.size() - pos.Y() - 1;
-		curr_y = board.size() - 1;
+		curr_x = pos.Y() + pos.X();
+		curr_y = 0;
 	}
 
 	//start scanning
-	while (curr_x < board.size() && curr_y < board.size()) {
+	while (curr_x < board.size() && curr_y >= 0) {
 		if (board[curr_y][curr_x] == player) {
 
 			if (x_start == -1) {
@@ -335,7 +321,7 @@ pair<Position, Position> Board::limits_in_sec_diag(PLAYER player, vector<vector<
 
 		}
 		curr_x++;
-		curr_y++;
+		curr_y--;
 	}
 
 	if (y_end == -1) //if y_start == -1 then always y_end == -1
