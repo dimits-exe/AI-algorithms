@@ -20,15 +20,7 @@ Board::Board(int size):DIMENSION(size) {
 	gameBoard[middleSquare.X()][middleSquare.Y()+1] = PLAYER::PLAYER2;
 }
 
-Board::Board(const Board& oldBoard): DIMENSION(oldBoard.DIMENSION) {
-	//construct each vector by copying the contenets of the old board
-	for (int i = 0; i < DIMENSION; i++) {
-		this->gameBoard.push_back(vector<PLAYER>(DIMENSION));
-		for (int j = 0; j < DIMENSION; j++) {
-			this->gameBoard[i].push_back(oldBoard.gameBoard[i][j]);
-		}
-	}
-}
+Board::Board(const Board& oldBoard): DIMENSION(oldBoard.DIMENSION), gameBoard(oldBoard.gameBoard){}
 
 list<Position> Board::getValidMoves(PLAYER p) const{
 	list<Position> ls;
@@ -58,24 +50,22 @@ bool Board::isValidMove(PLAYER p, Position move) const {
 		return false;
 
 	vector<vector<PLAYER>> testBoard(gameBoard);
-
 	testBoard[move.Y()][move.X()] = p;
 
-	if (Position::is_invalid(limits_in_x(p, testBoard, move.Y()).first) ||
-		Position::is_invalid(limits_in_y(p, testBoard, move.X()).first) ||
-		Position::is_invalid(limits_in_main_diag(p, testBoard, move).first) ||
+	if (Position::is_invalid(limits_in_x(p, testBoard, move.Y()).first) &&
+		Position::is_invalid(limits_in_y(p, testBoard, move.X()).first) &&
+		Position::is_invalid(limits_in_main_diag(p, testBoard, move).first) &&
 		Position::is_invalid(limits_in_sec_diag(p, testBoard, move).first)) {
-		testBoard[move.Y()][move.X()] = PLAYER::EMPTY;
 		return false;
 	}
-		
+
 	return true;
 }
 
 void Board::makeMove(PLAYER p, Position move) {
 	bool pair_exists = false;
 
-	gameBoard[move.X()][move.Y()] = p;
+	gameBoard[move.Y()][move.X()] = p;
 
 	pair<Position, Position> x_axis = limits_in_x(p, gameBoard, move.Y());
 	if (!Position::is_invalid(x_axis.first)) { 
@@ -104,7 +94,7 @@ void Board::makeMove(PLAYER p, Position move) {
 		//flip all pieces to the player's control
 		int curr_x = main_diag.first.X();
 		int curr_y = main_diag.second.Y();
-		while (curr_x <= main_diag.second.X() && curr_y <= main_diag.second.Y()) {
+		while (curr_x <= main_diag.second.X() && curr_y < main_diag.second.Y()) {
 			gameBoard[curr_y][curr_x] = p;
 			curr_x++;
 			curr_y++;
@@ -126,7 +116,7 @@ void Board::makeMove(PLAYER p, Position move) {
 	}
 
 	if (!pair_exists) {
-		gameBoard[move.X()][move.Y()] = PLAYER::EMPTY;
+		gameBoard[move.Y()][move.X()] = PLAYER::EMPTY;
 		throw logic_error("Invalid move " + std::to_string(move.X()) + "-" + std::to_string(move.Y()));
 	}
 		
