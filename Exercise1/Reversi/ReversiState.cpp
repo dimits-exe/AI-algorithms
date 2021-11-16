@@ -51,9 +51,9 @@ int ReversiState::calculateValue(ReversiState* state) {
 list<ReversiState> ReversiState::getChildren() const {
 	list<ReversiState> children;
 
-	for (Position move : board.getValidMoves(turn)) {
+	for (Position move : board.getValidMoves(nextTurn(turn))) {
 		Board newBoard(this->board);
-		newBoard.makeMove(turn, move);
+		newBoard.makeMove(nextTurn(turn), move);
 
 		ReversiState* newState = new ReversiState(nextTurn(turn), newBoard);
 		newState->setFather(this); 
