@@ -8,7 +8,7 @@
 class ReversiState {
 
 public:
-	ReversiState(PLAYER p, Board& board);
+	ReversiState(PLAYER p, const Board& board);
 
 	ReversiState(const ReversiState&);
 
