@@ -65,23 +65,23 @@ private:
 	Get a pair containing the furthest pair of player controlled squares in a line.
 	Returns an invalid position if a pair isn't found.
 	*/
-	static std::pair<Position, Position> limits_in_x(PLAYER p, std::vector<std::vector<PLAYER>>& board, int line);
+	static std::pair<Position, Position> limits_in_x(PLAYER p, const std::vector<std::vector<PLAYER>>& board, int line);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in a row.
 	Returns an invalid position if a pair isn't found.
 	*/
-	static std::pair<Position, Position> limits_in_y(PLAYER p, std::vector<std::vector<PLAYER>>& board, int row);
+	static std::pair<Position, Position> limits_in_y(PLAYER p, const std::vector<std::vector<PLAYER>>& board, int row);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in the move's square's
 	main diagonal. Returns an invalid position if a pair isn't found.
 	*/
-	static std::pair<Position, Position> limits_in_main_diag(PLAYER, std::vector<std::vector<PLAYER>>& board, Position);
+	static std::pair<Position, Position> limits_in_main_diag(PLAYER, const std::vector<std::vector<PLAYER>>& board, Position);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in the move's square's
 	secondary diagonal. Returns an invalid position if a pair isn't found.
 	*/
-	static std::pair<Position, Position> limits_in_sec_diag(PLAYER, std::vector<std::vector<PLAYER>>& board, Position);
+	static std::pair<Position, Position> limits_in_sec_diag(PLAYER, const std::vector<std::vector<PLAYER>>& board, Position);
 };
