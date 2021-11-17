@@ -31,14 +31,9 @@ public:
 	}
 
 private:
-	/*Used in the constructor.*/
-	static int calculateValue(ReversiState* state);
-
 	static const int BOARD_SIZE = 8;
 
 	std::unique_ptr<const AbstractState> father;
-
-	const int value;
 
 	const Board board;
 
