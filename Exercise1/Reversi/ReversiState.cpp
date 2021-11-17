@@ -2,9 +2,9 @@
 
 using namespace std;
 
-ReversiState::ReversiState(PLAYER p, const Board& other_board): board(other_board), turn(p), value(calculateValue(this)) {}
+ReversiState::ReversiState(PLAYER p, const Board& other_board) : board(other_board), turn(p) {}
 
-ReversiState::ReversiState(const ReversiState& other): board(other.board), turn(nextTurn(other.turn)), value(other.value) {}
+ReversiState::ReversiState(const ReversiState& other): board(other.board), turn(nextTurn(other.turn)) {}
 
 Board ReversiState::getBoard() const {
 	return board;
@@ -32,13 +32,9 @@ bool ReversiState::isFinal() const {
 }
 
 int ReversiState::getValue() const {
-	return value;
-}
-
-int ReversiState::calculateValue(ReversiState* state) {
-	int score = state->board.getScore(state->turn);
-	if (state->isFinal()) { //if game won return infinity depending on who won
-		if(score > 0)
+	int score = board.getScore(turn);
+	if (isFinal()) { //if game won return infinity depending on who won
+		if (score > 0)
 			return INT_MAX;
 		else
 			return INT_MIN;
@@ -56,7 +52,7 @@ list<ReversiState> ReversiState::getChildren() const {
 		newBoard.makeMove(nextTurn(turn), move);
 
 		ReversiState* newState = new ReversiState(nextTurn(turn), newBoard);
-		newState->setFather(this); 
+		newState->setFather(this);
 
 		children.push_back(*newState);
 	}
