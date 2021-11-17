@@ -1,8 +1,6 @@
 #pragma once
 #include <memory>
 #include <list>
-
-#include "AbstractState.h"
 #include "Board.h"
 
 class ReversiState {
