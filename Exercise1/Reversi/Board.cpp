@@ -1,9 +1,10 @@
 #include "Board.h"
 #include <string> 
+#include <iostream>
 
 using namespace std;
 
-Board::Board(int size):DIMENSION(size) {
+Board::Board(int size) : DIMENSION(size) {
 	//construct vectors and initialize all squares to empty
 	for (int i = 0; i < DIMENSION; i++) {
 		this->gameBoard.push_back(vector<PLAYER>(size));
@@ -20,7 +21,14 @@ Board::Board(int size):DIMENSION(size) {
 	gameBoard[middleSquare.X()][middleSquare.Y()+1] = PLAYER::PLAYER2;
 }
 
-Board::Board(const Board& oldBoard): DIMENSION(oldBoard.DIMENSION), gameBoard(oldBoard.gameBoard){}
+Board::Board(const Board& oldBoard) { 
+	*this = oldBoard; 
+}
+
+void Board::operator=(const Board& other) {
+	this->DIMENSION = other.DIMENSION;
+	this->gameBoard = other.gameBoard;
+}
 
 list<Position> Board::getValidMoves(PLAYER p) const{
 	list<Position> ls;
@@ -58,6 +66,25 @@ bool Board::isValidMove(PLAYER p, Position move) const {
 		Position::is_invalid(limits_in_sec_diag(p, testBoard, move).first)) {
 		return false;
 	}
+
+	/*
+	* 	
+	cout << "Move " << move.Y() << "-" << move.X() << endl;
+	if (Position::is_invalid(limits_in_x(p, testBoard, move.Y()).first)) {
+		cout << "No x" << endl;
+	}
+	if (Position::is_invalid(limits_in_y(p, testBoard, move.X()).first)){
+		cout << "No y" << endl;
+	}
+	if (Position::is_invalid(limits_in_main_diag(p, testBoard, move).first)) {
+		cout << "No main" << endl;
+	}
+	if (Position::is_invalid(limits_in_sec_diag(p, testBoard, move).first)) {
+		cout << "No sec" << endl;
+	}
+
+	*/
+
 	return true;
 }
 
@@ -66,53 +93,64 @@ void Board::makeMove(PLAYER p, Position move) {
 
 	gameBoard[move.Y()][move.X()] = p;
 
-	pair<Position, Position> x_axis = limits_in_x(p, gameBoard, move.Y());
-	if (!Position::is_invalid(x_axis.first)) { 
-		//if a pair was found
-		pair_exists = true;
-		//flip all pieces to the player's control
-		for (int i = x_axis.first.X(); i < x_axis.second.X(); i++) {
-			gameBoard[move.Y()][i] = p;
+	{	//check pairs on the x axis
+		pair<Position, Position> x_axis = limits_in_x(p, gameBoard, move.Y());
+		if (!Position::is_invalid(x_axis.first)) {
+			//if a pair was found
+			pair_exists = true;
+			//flip all pieces to the player's control
+			for (int i = x_axis.first.X(); i < x_axis.second.X(); i++) {
+				gameBoard[move.Y()][i] = p;
+			}
+		}
+	}
+	
+	{	//check pairs on the y axis
+		pair<Position, Position> y_axis = limits_in_y(p, gameBoard, move.X());
+		if (!Position::is_invalid(y_axis.first)) {
+			//if a pair was found
+			pair_exists = true;
+			//flip all pieces to the player's control
+			for (int i = y_axis.first.Y(); i < y_axis.second.Y(); i++) {
+				gameBoard[i][move.X()] = p;
+			}
+		}
+
+	}
+	
+	{	//check pairs on the left-to-right diagonal 
+		pair<Position, Position> main_diag = limits_in_main_diag(p, gameBoard, move);
+		if (!Position::is_invalid(main_diag.first)) {
+			//if a pair was found
+			pair_exists = true;
+			//flip all pieces to the player's control
+			int curr_x = main_diag.first.X();
+			int curr_y = main_diag.second.Y();
+			while (curr_x <= main_diag.second.X() && curr_y < main_diag.second.Y()) {
+				gameBoard[curr_y][curr_x] = p;
+				curr_x++;
+				curr_y++;
+			}
+		}
+	}
+	
+	{	//check pairs on the right_to_left diagonal 
+		pair<Position, Position> sec_diag = limits_in_sec_diag(p, gameBoard, move);
+		if (!Position::is_invalid(sec_diag.first)) {
+			//if a pair was found
+			pair_exists = true;
+			//flip all pieces to the player's control
+			int curr_x = sec_diag.first.X();
+			int curr_y = sec_diag.second.Y();
+			while (curr_x <= sec_diag.second.X() && curr_y <= sec_diag.second.Y()
+				&& curr_y >= 0) {
+				gameBoard[curr_y][curr_x] = p;
+				curr_x++;
+				curr_y--;
+			}
 		}
 	}
 
-	pair<Position, Position> y_axis = limits_in_y(p, gameBoard, move.X());
-	if (!Position::is_invalid(y_axis.first)) {
-		//if a pair was found
-		pair_exists = true;
-		//flip all pieces to the player's control
-		for (int i = y_axis.first.Y(); i < y_axis.second.Y(); i++) {
-			gameBoard[i][move.X()] = p;
-		}
-	}
-
-	pair<Position, Position> main_diag = limits_in_main_diag(p, gameBoard, move);
-	if (!Position::is_invalid(main_diag.first)) {
-		//if a pair was found
-		pair_exists = true;
-		//flip all pieces to the player's control
-		int curr_x = main_diag.first.X();
-		int curr_y = main_diag.second.Y();
-		while (curr_x <= main_diag.second.X() && curr_y < main_diag.second.Y()) {
-			gameBoard[curr_y][curr_x] = p;
-			curr_x++;
-			curr_y++;
-		}
-	}
-
-	pair<Position, Position> sec_diag = limits_in_sec_diag(p, gameBoard, move);
-	if (!Position::is_invalid(sec_diag.first)) {
-		//if a pair was found
-		pair_exists = true;
-		//flip all pieces to the player's control
-		int curr_x = sec_diag.first.X();
-		int curr_y = sec_diag.second.Y();
-		while (curr_x <= sec_diag.second.X() && curr_y <= sec_diag.second.Y()) {
-			gameBoard[curr_y][curr_x] = p;
-			curr_x++;
-			curr_y--;
-		}
-	}
 
 	if (!pair_exists) {
 		gameBoard[move.Y()][move.X()] = PLAYER::EMPTY;
@@ -129,6 +167,7 @@ double Board::hashcode() const {
 			str += static_cast<char>(gameBoard[i][j]);
 		}
 	}
+
 	return hash<std::string>()(str);
 }
 
@@ -139,16 +178,14 @@ int Board::getScore(PLAYER p) const {
 	int pl1Count = 0;
 	int pl2Count = 0;
 
-	for (int i = 0; i < DIMENSION; i++) {
-		for (int j = 0; j < DIMENSION; j++) {
+	for (int i = 0; i < this->DIMENSION; i++) {
+		for (int j = 0; j < this->DIMENSION; j++) {
 
-			switch (gameBoard[i][j]) {
-			case PLAYER::PLAYER1:
+			if (gameBoard[i][j] == PLAYER::PLAYER1) {
 				pl1Count++;
-				break;
-			case PLAYER::PLAYER2:
+			}
+			else if (gameBoard[i][j] == PLAYER::PLAYER2) {
 				pl2Count++;
-				break;
 			}
 
 		}
@@ -158,15 +195,19 @@ int Board::getScore(PLAYER p) const {
 		return pl1Count - pl2Count;
 	else if (p == PLAYER::PLAYER2)
 		return pl2Count - pl1Count;
-	else
-		return INT_MIN; //unreachable because of if statement at the top
 }
 			
 
 string Board::toString() const {
-	string str;
+	string str (" ");
+
+	//build horizontal header
+	for (int i = 1; i <= DIMENSION; i++)
+		str += to_string(i) + " ";
+	str += "\n";
 
 	for (int i = 0; i < DIMENSION; i++) {
+		str += to_string(i+1);
 		for (int j = 0; j < DIMENSION; j++) {
 			str += static_cast<char>(gameBoard[i][j]); //append player character
 			str += " ";
@@ -192,7 +233,7 @@ pair<Position, Position> Board::limits_in_x(PLAYER p, const vector<vector<PLAYER
 	bool gap_found = false;
 	int x_of_first_enemy = -1;
 
-	for (int i = 0; i < board.size(); i++) {
+	for (long i = 0; i < board.size(); i++) {
 		if (board[line][i] == p) {
 
 			//if a gap was found, the move is invalid
@@ -232,7 +273,7 @@ pair<Position, Position> Board::limits_in_y(PLAYER p, const vector<vector<PLAYER
 	bool gap_found = false;
 	int y_of_first_enemy = -1;
 
-	for (int i = 0; i < board.size(); i++) {
+	for (long i = 0; i < board.size(); i++) {
 		if (board[i][row] == p) {
 
 			//if a gap was found, the move is invalid
