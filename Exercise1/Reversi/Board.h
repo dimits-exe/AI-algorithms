@@ -1,9 +1,9 @@
 #pragma once
-
+#include "Position.h"
 #include <vector>
 #include <list>
 #include <utility>
-#include "Position.h"
+
 
 /*An enum describing who occupies a certain square.*/
 enum class PLAYER : char { EMPTY = '-', PLAYER1 = '1', PLAYER2 = '2' }; //define these are constants?
@@ -15,9 +15,9 @@ inline PLAYER nextTurn(PLAYER currentTurn) {
 		return PLAYER::PLAYER1;
 }
 
-/*
-A class describing the game's board.
-*/
+/// <summary>
+/// A class describing the game's board.
+/// </summary>
 class Board {
 
 public:
@@ -25,6 +25,8 @@ public:
 	Board(int size);
 
 	Board(const Board& oldBoard);
+
+	void operator=(const Board& other);
 
 	/*
 	Marks a player's move on the board.
@@ -55,7 +57,7 @@ public:
 	std::string toString() const;
 
 private:
-	const int DIMENSION;
+	int DIMENSION;
 
 	std::vector<std::vector<PLAYER>> gameBoard;
 
