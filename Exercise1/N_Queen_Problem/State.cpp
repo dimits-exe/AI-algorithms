@@ -256,4 +256,3 @@ State* ChildrenIterator::operator*()
 	generated_state->evaluate();
 	return generated_state;
 }
-
