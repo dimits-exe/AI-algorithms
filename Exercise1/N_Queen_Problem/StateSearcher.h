@@ -11,7 +11,7 @@ public:
 
 	static State* HCFirstChoice(State*);
 
-	static State* HCRandomRestarts(int dim, int retries);
+	static State* HCRandomRestarts(int dimension, int retries);
 	
 	static State* HCStochastic(State*);
 };
