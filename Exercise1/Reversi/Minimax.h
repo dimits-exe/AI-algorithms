@@ -21,7 +21,7 @@ Board mini_max(PLAYER turn, const Board& start, int max_depth);
 /// <param name="TTL">How many more calls will be made before the algorithm terminates.</param>
 /// <returns>The state with the current best outcome for the computer.</returns>
 static ReversiState min_value(std::unordered_set <ReversiState, ReversiState::HashFunction>& closed_set, 
-	ReversiState& state, int a, int b, int TTL);
+	const ReversiState& state, int a, int b, int TTL);
 
 /// <summary>
 /// The 'max' half of the alpha-beta pruning algorithm.
@@ -33,4 +33,4 @@ static ReversiState min_value(std::unordered_set <ReversiState, ReversiState::Ha
 /// <param name="TTL">How many more calls will be made before the algorithm terminates.</param>
 /// <returns>The state with the current best outcome for the computer.</returns>
 static ReversiState max_value(std::unordered_set <ReversiState, ReversiState::HashFunction>& closed_set,
-	ReversiState& state, int a, int b, int TTL);
+	const ReversiState& state, int a, int b, int TTL);
