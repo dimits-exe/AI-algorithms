@@ -1,12 +1,14 @@
+#define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+
 #pragma once
 
 #include <iostream>
 #include <list>
 
+class ChildrenIterator;
+
 class State
 {
-	class ChildrenIterator;
-
 public:
 	static State* random(int dimension);
 
@@ -35,30 +37,39 @@ public:
 	ChildrenIterator begin();
 	ChildrenIterator end();
 
-	class ChildrenIterator : public std::iterator<std::input_iterator_tag, State*>
-	{
-
-	public:
-		ChildrenIterator(const State& state);
-
-		ChildrenIterator& operator++();
-		ChildrenIterator operator++(int);
-		bool operator==(const ChildrenIterator& rhs);
-		bool operator!=(const ChildrenIterator& rhs);
-		State* operator*();
-
-	private:
-		const State& original_state;
-		State* generated_state;
-		int dim, cx, cy, qy;
-	};
+	friend ChildrenIterator;
 
 private:
 	bool *data;
-	int dimension, score;
+	const int dimension;
+	int score;
 
 	State *father;
 
 	void evaluate();
 };
+
+class ChildrenIterator : public std::iterator<std::input_iterator_tag, State*>
+{
+
+public:
+	ChildrenIterator(const State& state);
+	~ChildrenIterator();
+
+	ChildrenIterator& operator++();
+	ChildrenIterator operator++(int);
+	bool operator==(const ChildrenIterator& rhs);
+	bool operator!=(const ChildrenIterator& rhs);
+	State* operator*();
+
+	void print() {
+		printf("%d, %d\n", cx, cy);
+	}
+
+private:
+	const State& original_state;
+	State* generated_state;
+	int cx, cy, qy;
+};
+
 
