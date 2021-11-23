@@ -1,5 +1,4 @@
 #include "StateSearcher.h"
-#include <time.h>
 #include <list>
 
 using namespace std;
@@ -18,10 +17,12 @@ State *StateSearcher::HillClimbing(State *initial_state)
 
 			State* generated_child = *iter;
 			// initialise largest_child with the first generated child
-			if (largest_child == nullptr) {
+			if (largest_child == nullptr)
+			{
 				largest_child = generated_child;
 			}
-			else {
+			else
+			{
 				// check if generated child is better
 				if (generated_child->getScore() > largest_child->getScore()) {
 					delete largest_child;
@@ -32,10 +33,12 @@ State *StateSearcher::HillClimbing(State *initial_state)
 				}
 			}
 		}
+
 		exists_larger = largest_child->getScore() > largest_overall->getScore();
 		if (exists_larger) {
 			delete largest_overall;
-			largest_overall = largest_child;
+			largest_overall = new State(*largest_child);
+			delete largest_child;
 		}
 	}
 
@@ -44,6 +47,7 @@ State *StateSearcher::HillClimbing(State *initial_state)
 
 State* StateSearcher::HCSideSteps(State* initial_state, int side_steps)
 {
+	// lmao doesn't work
 	State *current = initial_state;
 	std::cout << side_steps << std::endl;
 

@@ -123,27 +123,17 @@ void State::evaluate()
 	this->score = 0;
 
 	// find the queen on each row
-	int qx, qy;
 	for (int row = 0; row < dim; row++)
 	{
-		qx = row;
-		for (qy = 0; this->data[row * dim + qy] == 0; qy++)
-			;
+		int qx = row, qy = findQ(qx);
 
 		// find the queen on each of the remaining rows
-		int cx, cy;
 		for (int remaining_row = row + 1; remaining_row < dim; remaining_row++)
 		{
-			cx = remaining_row;
-			for (cy = 0; this->data[cx * dim + cy] == 0; cy++)
-				;
+			int cx = remaining_row, cy = findQ(cx);
 
-			// same column
-			if (qy == cy)
-				this->score++;
-
-			// same diagonal
-			if (cx - qx == abs(qy - cy))
+			// count pair if same column or same diagonal
+			if (qy == cy || cx - qx == abs(qy - cy))
 				this->score++;
 		}
 	}
@@ -152,15 +142,9 @@ void State::evaluate()
 size_t State::HashFunction::operator()(const State& state) const
 {
 	int hash = 0;
-	for (int i = 0; i < state.dimension; i++) {
-		int queen_col;
-		for (queen_col = 0; state.data[i * state.dimension + queen_col] == 0 && queen_col < state.dimension + 1; queen_col++)
-			;
-
-		if (queen_col == state.dimension)
-			cout << "rip hash" << endl;
-
-		hash += (int) pow(10, state.dimension - i - 1) * queen_col;
+	for (int row = 0; row < state.dimension; row++) {
+		hash += state.findQ(row);
+		hash *= 10;
 	}
 
 	return hash;
@@ -174,8 +158,9 @@ ChildrenIterator State::begin()
 ChildrenIterator State::end()
 {
 	int dim = this->dimension;
-	// TODO: don't do this lmao
 	ChildrenIterator iter = ChildrenIterator(*this);
+
+	// dim*dim squares - dim queens
 	for (int i = 0, count = (dim * dim) - dim; i < count; i++)
 		iter.operator++();
 	
@@ -183,42 +168,39 @@ ChildrenIterator State::end()
 }
 
 ChildrenIterator::ChildrenIterator(const State& state)
-	: original_state(state), generated_state(nullptr), cx(0), cy(0), qy(-1) {
+	: original_state(state), generated_state(nullptr), cx(0), cy(0), qy(-1) { }
 
-	for (qy = 0; original_state.data[cx * original_state.dimension + qy] == 0; qy++)
-		if (qy == original_state.dimension)
-			cout << "bad queen at row1 " << cx << endl;
-}
-
-ChildrenIterator::~ChildrenIterator()
-{
-	;
-}
+ChildrenIterator::~ChildrenIterator() { }
 
 ChildrenIterator& ChildrenIterator::operator++()
 {
+	// clear cached State
 	generated_state = nullptr;
-	int dim = original_state.dimension;
 
 	do {
+		// advance column
 		cy++;
-		if (cy == original_state.dimension) {
-			cy = 0;
-			cx++;
-			qy = -1;
 
+		// if column is outside of board limits
+		if (cy == original_state.dimension) {
+
+			// advance row
+			cx++;
+			
+			// if row is outside of board limits
 			if (cx == original_state.dimension) {
+				// mark position invalid and break
 				cx = cy = -1;
 				break;
 			}
 
-			for (qy = 0; original_state.data[cx * dim + qy] == 0; qy++)
-				if (qy == dim)
-					cout << "bad queen at row1 " << cx << endl;
+			// reset column and queen position
+			cy = 0;
+			qy = original_state.findQ(cx);
 		}
+	// skip boards that are the same as parent
 	} while (cy == qy);
 
-	// cout << "now at: " << cx << ", " << cy << endl;
 	return *this;
 }
 
@@ -242,16 +224,20 @@ bool ChildrenIterator::operator!=(const ChildrenIterator& rhs)
 
 State* ChildrenIterator::operator*()
 {
+	// return cached State
 	if (generated_state != nullptr)
 		return generated_state;
 
-	int dim = original_state.dimension;
+	// set row with queen at current position (cx, cy)
+	original_state.set(cx, qy, 0);
+	original_state.set(cx, cy, 1);
 
-	original_state.data[cx * dim + qy] = 0;
-	original_state.data[cx * dim + cy] = 1;
-	generated_state = new State(dim, original_state.data);
-	original_state.data[cx * dim + cy] = 0;
-	original_state.data[cx * dim + qy] = 1;
+	// generate new State with queen at new position and cache it
+	generated_state = new State(original_state);
+
+	// reset row with queen at original position (cx, qy)
+	original_state.set(cx, cy, 0);
+	original_state.set(cx, qy, 1);
 
 	generated_state->evaluate();
 	return generated_state;

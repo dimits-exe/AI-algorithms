@@ -50,16 +50,17 @@ private:
 
 	void evaluate();
 
-	inline bool get(int row, int col) {
+	inline bool get(int row, int col) const {
 		return this->data[row * this->dimension + col];
 	}
 
-	inline void set(int row, int col, bool value) {
+	inline void set(int row, int col, bool value) const {
 		this->data[row * this->dimension + col] = value;
 	}
 
-	inline int findQ(int row) {
+	inline int findQ(int row) const {
 		int queen_col = 0;
+
 		for (; this->get(row, queen_col) == 0; queen_col++)
 			;
 
@@ -80,7 +81,7 @@ public:
 	bool operator!=(const ChildrenIterator& rhs);
 	State* operator*();
 
-	void print() {
+	inline void print() {
 		printf("%d, %d\n", cx, cy);
 	}
 
@@ -89,5 +90,4 @@ private:
 	State* generated_state;
 	int cx, cy, qy;
 };
-
 
