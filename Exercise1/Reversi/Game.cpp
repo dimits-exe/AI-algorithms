@@ -7,7 +7,7 @@
 #define SELECT_TURN			"Do you want to play first? (y/n)" INPUT_SYMBOL
 #define MAKE_MOVE			"Play the next move (Give x-y coordinates)." INPUT_SYMBOL
 #define WRONG_MOVE			"This move is invalid."
-#define MAX_VALID_DEPTH		20
+#define MAX_VALID_DEPTH		10
 
 using namespace std;
 
@@ -63,8 +63,8 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 	do {
 		cout << MAKE_MOVE;
 		cin >> y >> x;
+		cout << "The player played " << y << '-' << x << endl;
 		x--; y--; //convert to 1-8 range
-		cout << "Player " << static_cast<char>(turn) << "played " << y << '-' << x << endl;
 
 		if (x <= 0 || x > 8 || y <= 0 || y > 8) {
 			cout << WRONG_MOVE << endl;
@@ -75,8 +75,8 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 				currentBoard.makeMove(turn, Position(x, y));
 				succeded = true;
 			}
-			catch (logic_error) {
-				cout << WRONG_MOVE << endl;
+			catch (logic_error e) {
+				cout << e.what() << endl;
 				succeded = false;
 			}
 		}
