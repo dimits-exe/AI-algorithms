@@ -2,35 +2,50 @@
 #include <time.h>
 #include <list>
 
+using namespace std;
+
 State *StateSearcher::HillClimbing(State *initial_state)
 {
-	State *current = initial_state;
+	cout << "starting HC" << endl;
+	State *largest_overall = new State(*initial_state);
 
 	bool exists_larger = true;
 	while (exists_larger) {
 
-		exists_larger = false;
-		State *largest = current;
+		State* largest_child = nullptr;
 
-		for (auto iter = current->begin(), end = current->end(); iter != end; iter++) {
-			if ((*iter)->getScore() > largest->getScore()) {
-				delete largest;
-				largest = *iter;
-				exists_larger = true;
+		for (auto iter = largest_overall->begin(), end = largest_overall->end(); iter != end; iter++) {
+
+			State* generated_child = *iter;
+			// initialise largest_child with the first generated child
+			if (largest_child == nullptr) {
+				largest_child = generated_child;
 			}
 			else {
-				delete *iter;
+				// check if generated child is better
+				if (generated_child->getScore() > largest_child->getScore()) {
+					delete largest_child;
+					largest_child = generated_child;
+				}
+				else {
+					delete generated_child;
+				}
 			}
 		}
-		current = largest;
+		exists_larger = largest_child->getScore() > largest_overall->getScore();
+		if (exists_larger) {
+			delete largest_overall;
+			largest_overall = largest_child;
+		}
 	}
 
-	return current;
+	return largest_overall;
 }
 
 State* StateSearcher::HCSideSteps(State* initial_state, int side_steps)
 {
 	State *current = initial_state;
+	std::cout << side_steps << std::endl;
 
 	bool exists_larger = true;
 	while (exists_larger) {
@@ -58,7 +73,8 @@ State* StateSearcher::HCSideSteps(State* initial_state, int side_steps)
 
 State* StateSearcher::HCFirstChoice(State *initial_state)
 {
-	State *current = initial_state;
+	cout << "starting HCFC" << endl;
+	State *current = new State(*initial_state);
 
 	bool exists_larger = true;
 	while (exists_larger) {
@@ -83,58 +99,71 @@ State* StateSearcher::HCFirstChoice(State *initial_state)
 	return current;
 }
 
-State* StateSearcher::HCRandomRestarts(int dim, int retries)
+State* StateSearcher::HCRandomRestarts(int dimension, int retries)
 {
-	State* largest;
-	for (int i = 0; i < retries; i++) {
-		State* state = StateSearcher::HillClimbing(State::random(dim));
-		if (state->getScore() > largest->getScore())
+	cout << "starting HCRR" << endl;
+	State* largest = StateSearcher::HillClimbing(State::random(dimension));
+
+	for (int i = 1; i < retries; i++) {
+		State* state = StateSearcher::HillClimbing(State::random(dimension));
+		if (state->getScore() > largest->getScore()) {
+			delete largest;
 			largest = state;
+		}
+		else {
+			delete state;
+		}
 	}
 	return largest;
 }
 
 State* StateSearcher::HCStochastic(State *initial_state)
 {
-	srand((unsigned)time(NULL));
-
-	State* current = initial_state;
+	cout << "starting HCSt" << endl;
+	State* current = new State(*initial_state);
 	std::list<State*> bigger_children;
+	std::list<State*>* children;
 
 	bool exists_larger = true;
 	while (exists_larger) {
 
-		std::list<State*> *children = current->get_children();
+		children = current->get_children();
 
-		for (State *s : *children) {
-			if (s->getScore() > current->getScore())
-				bigger_children.push_back(s);
+		for (State *child : *children) {
+			if (child->getScore() > current->getScore())
+				bigger_children.push_back(child);
 			else
-				delete s;
+				delete child;
 		}
+
+		children->clear();
+		delete children;
 
 		exists_larger = !bigger_children.empty();
 
-		bigger_children.sort();
-		int total_score = 0;
-		for (auto iter = bigger_children.begin(); iter != bigger_children.end(); iter++)
-			total_score += (*iter)->getScore();
+		if (exists_larger) {
+			bigger_children.sort();
+			int total_score = 0;
+			for (auto iter = bigger_children.begin(); iter != bigger_children.end(); iter++)
+				total_score += (*iter)->getScore();
 
-		int target = rand() % total_score;
-		int running_score = 0;
-		for (auto iter = bigger_children.begin(); iter != bigger_children.end(); iter++) {
-			State* temp = *iter;
-			running_score += temp->getScore();
-			if (running_score > target) {
-				current = temp;
-				break;
+			int target = rand() % total_score;
+			int running_score = 0;
+			for (auto iter = bigger_children.begin(); iter != bigger_children.end(); iter++) {
+				State* temp = *iter;
+				running_score += temp->getScore();
+				if (running_score > target) {
+					delete current;
+					current = temp;
+					break;
+				}
 			}
-		}
 
-		for (State* s : bigger_children)
-			if (s != current)
-				delete s;
-		bigger_children.clear();
+			for (State* bigger_child : bigger_children)
+				if (bigger_child != current)
+					delete bigger_child;
+			bigger_children.clear();
+		}
 	}
 
 	return current;
