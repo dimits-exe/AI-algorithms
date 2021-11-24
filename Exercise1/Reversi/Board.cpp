@@ -28,6 +28,11 @@ Board::Board(const Board& oldBoard) {
 void Board::operator=(const Board& other) {
 	this->DIMENSION = other.DIMENSION;
 	this->gameBoard = other.gameBoard;
+	this->lastMovePlayed = other.lastMovePlayed;
+}
+
+Position Board::getLastMove() const {
+	return lastMovePlayed;
 }
 
 list<Position> Board::getValidMoves(PLAYER p) const{
@@ -60,32 +65,28 @@ bool Board::isValidMove(PLAYER p, Position move) const {
 	vector<vector<PLAYER>> testBoard(gameBoard);
 	testBoard[move.Y()][move.X()] = p;
 
-	if (Position::is_invalid(limits_in_x(p, testBoard, move.Y()).first) &&
-		Position::is_invalid(limits_in_y(p, testBoard, move.X()).first) &&
-		Position::is_invalid(limits_in_main_diag(p, testBoard, move).first) &&
-		Position::is_invalid(limits_in_sec_diag(p, testBoard, move).first)) {
-		return false;
-	}
+	bool x_cor = true;
+	bool y_cor = true;
+	bool diag_1_cor = true;
+	bool diag_2_cor = true;
 
-	/*
-	* 	
-	cout << "Move " << move.Y() << "-" << move.X() << endl;
-	if (Position::is_invalid(limits_in_x(p, testBoard, move.Y()).first)) {
-		cout << "No x" << endl;
-	}
-	if (Position::is_invalid(limits_in_y(p, testBoard, move.X()).first)){
-		cout << "No y" << endl;
-	}
-	if (Position::is_invalid(limits_in_main_diag(p, testBoard, move).first)) {
-		cout << "No main" << endl;
-	}
-	if (Position::is_invalid(limits_in_sec_diag(p, testBoard, move).first)) {
-		cout << "No sec" << endl;
-	}
+	pair<Position, Position> move_x = limits_in_x(p, testBoard, move);
+	if (move_x.first.X() == move_x.second.X())
+		x_cor = false;
 
-	*/
+	pair<Position, Position> move_y = limits_in_y(p, testBoard, move);
+	if (move_y.first.Y() == move_y.second.Y())
+		y_cor = false;
 
-	return true;
+	pair<Position, Position> move_diag_1 = limits_in_main_diag(p, testBoard, move);
+	if (move_diag_1.first.X() == move_diag_1.second.X())
+		diag_1_cor = false;
+
+	pair<Position, Position> move_diag_2 = limits_in_sec_diag(p, testBoard, move);
+	if (move_diag_2.first.X() == move_diag_2.second.X())
+		diag_2_cor = false;
+
+	return x_cor || y_cor || diag_1_cor || diag_2_cor;
 }
 
 void Board::makeMove(PLAYER p, Position move) {
@@ -98,69 +99,55 @@ void Board::makeMove(PLAYER p, Position move) {
 	gameBoard[move.Y()][move.X()] = p;
 
 	//check pairs on the x axis
-	pair<Position, Position> x_axis = limits_in_x(p, gameBoard, move.Y());
-	if (!Position::is_invalid(x_axis.first)) {
-		//if a pair was found
+	pair<Position, Position> x_axis = limits_in_x(p, gameBoard, move);
+
+	//flip all pieces to the player's control
+	for (int i = x_axis.first.X(); i < x_axis.second.X(); i++) {
+		gameBoard[move.Y()][i] = p;
 		pair_exists = true;
-		//flip all pieces to the player's control
-		for (int i = x_axis.first.X(); i < x_axis.second.X(); i++) {
-			gameBoard[move.Y()][i] = p;
-		}
 	}
-	
 	
 	//check pairs on the y axis
-	pair<Position, Position> y_axis = limits_in_y(p, gameBoard, move.X());
-	if (!Position::is_invalid(y_axis.first)) {
-		//if a pair was found
+	pair<Position, Position> y_axis = limits_in_y(p, gameBoard, move);
+	//flip all pieces to the player's control
+	for (int i = y_axis.first.Y(); i < y_axis.second.Y(); i++) {
+		gameBoard[i][move.X()] = p;
 		pair_exists = true;
-		//flip all pieces to the player's control
-		for (int i = y_axis.first.Y(); i < y_axis.second.Y(); i++) {
-			gameBoard[i][move.X()] = p;
-		}
 	}
-
-	
 	
 	//check pairs on the left-to-right diagonal 
 	pair<Position, Position> main_diag = limits_in_main_diag(p, gameBoard, move);
-	if (!Position::is_invalid(main_diag.first)) {
-		//if a pair was found
+	//flip all pieces to the player's control
+	int curr_x = main_diag.first.X();
+	int curr_y = main_diag.first.Y();
+	while (curr_x <= main_diag.second.X() && curr_y < main_diag.second.Y()) {
+		gameBoard[curr_y][curr_x] = p;
+		curr_x++;
+		curr_y++;
 		pair_exists = true;
-		//flip all pieces to the player's control
-		int curr_x = main_diag.first.X();
-		int curr_y = main_diag.second.Y();
-		while (curr_x <= main_diag.second.X() && curr_y < main_diag.second.Y()) {
-			gameBoard[curr_y][curr_x] = p;
-			curr_x++;
-			curr_y++;
-		}
 	}
 	
 	
 	//check pairs on the right_to_left diagonal 
 	pair<Position, Position> sec_diag = limits_in_sec_diag(p, gameBoard, move);
-	if (!Position::is_invalid(sec_diag.first)) {
-		//if a pair was found
+	curr_x = sec_diag.first.X();
+	curr_y = sec_diag.second.Y();
+	while (curr_x <= sec_diag.second.X() && curr_y <= sec_diag.second.Y()
+		&& curr_y >= 0) {
+		gameBoard[curr_y][curr_x] = p;
+		curr_x++;
+		curr_y--;
 		pair_exists = true;
-		//flip all pieces to the player's control
-		int curr_x = sec_diag.first.X();
-		int curr_y = sec_diag.second.Y();
-		while (curr_x <= sec_diag.second.X() && curr_y <= sec_diag.second.Y()
-			&& curr_y >= 0) {
-			gameBoard[curr_y][curr_x] = p;
-			curr_x++;
-			curr_y--;
-		}
 	}
 	
-
-
-	if (!pair_exists) {
-		gameBoard[move.Y()][move.X()] = prevValue;
-		throw logic_error("Invalid move x=" + std::to_string(move.X()) + " y=" + std::to_string(move.Y()) + " in board \n" + toString());
-	}
-		
+	//if (!pair_exists) {
+		//gameBoard[move.Y()][move.X()] = prevValue;
+		//throw logic_error("Invalid move x=" + std::to_string(move.X()) + " y=" + std::to_string(move.Y()) + " in board \n" + toString());
+	//}
+	//else {
+		//lastMovePlayed = move;
+	//}
+	lastMovePlayed = move;
 }
 
 double Board::hashcode() const {
@@ -228,199 +215,67 @@ bool Board::IsRangeValid(Position move) const {
 		&& move.X() >= 0 && move.Y() >= 0;
 }
 
-//code duplication lololololol
-
-pair<Position, Position> Board::limits_in_x(PLAYER p, const vector<vector<PLAYER>>& board, int line)  {
-	int x_start = -1;
-	int x_end = -1;
-
-	bool gap_found = false;
-	int x_of_first_enemy = -1;
-
-	for (long i = 0; i < board.size(); i++) {
-		if (board[line][i] == p) {
-
-			//if a gap was found, the move is invalid
-			if (gap_found)
-				return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-
-
-			if (x_start == -1) {
-				x_start = i;
-			}
-			else {
-				x_end = i;
-			}
-
-		}
-		//if an enemy is found while scanning
-		else if (x_of_first_enemy == -1 && board[line][i] == nextTurn(p))
-			x_of_first_enemy = i;
-		//only empty tiles allowed from now on
-		else if (x_start != -1 && board[line][i] == PLAYER::EMPTY) { 
-			gap_found = true;
-		}
-	}
-
-	//if x_start == -1 then always x_end == -1
-	//invalid if no other pieces exist between the start and the end
-	if (x_end == -1 || x_of_first_enemy < x_start || x_of_first_enemy > x_end) 
-		return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-	else
-		return pair<Position, Position>(Position(x_start, line), Position(x_end, line));
+auto get_range(int min, int max) {
+	return [min, max](int value) {
+		return (min <= value) && (value < max);
+	};
 }
 
-pair<Position, Position> Board::limits_in_y(PLAYER p, const vector<vector<PLAYER>>& board, int row) {
-	int y_start = -1;
-	int y_end = -1;
+pair<Position, Position> Board::limits_everywhere(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move, int dx, int dy)
+{
+	int max = board.size();
+	auto check_range = get_range(0, max);
 
-	bool gap_found = false;
-	int y_of_first_enemy = -1;
+	int sx = last_move.X(), sy = last_move.Y(), ex = last_move.X(), ey = last_move.Y();
 
-	for (long i = 0; i < board.size(); i++) {
-		if (board[i][row] == p) {
-
-			//if a gap was found, the move is invalid
-			if (gap_found)
-				return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-
-			if (y_start == -1) {
-				y_start = i;
+	if (check_range(sx - dx) && check_range(sy - dy))
+		// if (sx - dx >= 0 && sy - dy >= 0)
+	{
+		int i = sx - dx;
+		int j = sy - dy;
+		for (; check_range(i) && check_range(j) && board[j][i] != PLAYER::EMPTY; i -= dx, j -= dy)
+		{
+			if (board[j][i] == p) {
+				sx = i;
+				sy = j;
+				break;
 			}
-			else {
-				y_end = i;
-			}
-
 		}
-		//if an enemy is found while scanning
-		else if (y_of_first_enemy == -1 && board[i][row] == nextTurn(p))
-			y_of_first_enemy = i;
-		//if a gap is found before reaching the end, the move is invalid
-		else if (y_start != -1 && board[i][row] == PLAYER::EMPTY) 
-			gap_found = true;
-		
 	}
 
-	//if y_start == -1 then always y_end == -1
-	//invalid if no other pieces exist between the start and the end
-	if (y_end == -1 || y_of_first_enemy < y_start || y_of_first_enemy > y_end)
-		return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-	else
-		return pair<Position, Position>(Position(row, y_start), Position(row, y_end));
+	if (check_range(ex + dx) && check_range(ey + dy))
+		// if (ex + dx < max && ey + dy < max)
+	{
+		int i = ex + dx;
+		int j = ey + dy;
+		for (; check_range(i) && check_range(j) && board[j][i] != PLAYER::EMPTY; i += dx, j += dy)
+		{
+			if (board[j][i] == p) {
+				ex = i;
+				ey = j;
+				break;
+			}
+		}
+	}
+
+	return pair<Position, Position>(Position(sx, sy), Position(ex, ey));
+}
+pair<Position, Position>  Board::limits_in_x(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
+{
+	return limits_everywhere(p, board, last_move, 1, 0);
 }
 
-pair<Position, Position> Board::limits_in_main_diag(PLAYER player, const vector<vector<PLAYER>>& board, Position pos) {
-	int x_start = -1;
-	int x_end = -1;
-	int y_start = -1;
-	int y_end = -1;
-
-	int curr_x;
-	int curr_y;
-
-	int x_of_first_enemy = -1;
-
-	bool gap_found = false;
-
-	//find start of diagonals
-	if (pos.X() > pos.Y()) {
-		curr_y = 0;
-		curr_x = pos.X() - pos.Y();
-	}
-	else {
-		curr_x = 0;
-		curr_y = pos.Y() - pos.X();
-	}
-
-	//start scanning
-	while (curr_x < board.size() && curr_y < board.size()) {
-		if (board[curr_y][curr_x] == player) {
-
-			//if a gap was found, the move is invalid
-			if (gap_found)
-				return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-
-			if (x_start == -1) {
-				x_start = curr_x;
-				y_start = curr_y;
-			}
-			else {
-				x_end = curr_x;
-				y_end = curr_y;
-			}
-
-		}
-		//if an enemy is found while scanning
-		else if (x_of_first_enemy && board[curr_y][curr_x] == nextTurn(player))
-			x_of_first_enemy = curr_x;
-		//if a gap is found, the move is invalid
-		else if (x_start != -1 && board[curr_y][curr_x] == PLAYER::EMPTY) 
-			gap_found = true;
-
-		curr_x++;
-		curr_y++;
-	}
-
-	//if y_start == -1 then always y_end == -1
-	//invalid if no other pieces exist between the start and the end
-	if (y_end == -1 || x_of_first_enemy < x_start || x_of_first_enemy > x_end)
-		return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-	else
-		return pair<Position, Position>(Position(x_start, y_start), Position(x_end, y_end));
+pair<Position, Position>  Board::limits_in_y(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
+{
+	return limits_everywhere(p, board, last_move, 0, 1);
 }
 
-pair<Position, Position> Board::limits_in_sec_diag(PLAYER player, const vector<vector<PLAYER>>& board, Position pos) {
-	int x_start = -1;
-	int x_end = -1;
-	int y_start = -1;
-	int y_end = -1;
+pair<Position, Position>  Board::limits_in_main_diag(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
+{
+	return limits_everywhere(p, board, last_move, 1, 1);
+}
 
-	int curr_x = pos.X();
-	int curr_y = pos.Y();
-
-	int x_of_first_enemy = -1;
-
-	bool gap_found = false;
-
-	//seek start of diagonal
-	while (curr_x > 0 && curr_y < board.size()-1) { //for some f*cking reason it crashes without the -1
-		curr_x--;
-		curr_y++;
-	}
-
-	//start scanning
-	while (curr_x < board.size() && curr_y > 0) {
-		if (board[curr_y][curr_x] == player) {
-
-			//if a gap was found, the move is invalid
-			if (gap_found)
-				return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-
-			if (x_start == -1) {
-				x_start = curr_x;
-				y_start = curr_y;
-			}
-			else {
-				x_end = curr_x;
-				y_end = curr_y;
-			}
-
-		}
-		//if an enemy is found while scanning
-		else if (x_of_first_enemy && board[curr_y][curr_x] == nextTurn(player))
-			x_of_first_enemy = curr_x;
-		//if a gap is found, the move is invalid
-		else if (x_start != -1 && board[curr_y][curr_x] == PLAYER::EMPTY) 
-			gap_found = true;
-
-		curr_x++;
-		curr_y--;
-	}
-
-	//if y_start == -1 then always y_end == -1
-	//invalid if no other pieces exist between the start and the end
-	if (y_end == -1 || x_of_first_enemy < x_start || x_of_first_enemy > x_end)
-		return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-	else
-		return pair<Position, Position>(Position(x_start, y_start), Position(x_end, y_end));
+pair<Position, Position>  Board::limits_in_sec_diag(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
+{
+	return limits_everywhere(p, board, last_move, 1, -1);
 }
