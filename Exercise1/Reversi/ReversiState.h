@@ -1,13 +1,16 @@
 #pragma once
+
+#include "Board.h"
 #include <memory>
 #include <list>
 
-#include "Board.h"
-
+/// <summary>
+/// A class describing the state of a Board object.
+/// </summary>
 class ReversiState {
 
 public:
-	ReversiState(PLAYER p, const Board& board);
+	ReversiState(PLAYER p, PLAYER CPU_SYMBOL, const Board& board);
 
 	ReversiState(const ReversiState&);
 
@@ -35,6 +38,8 @@ public:
 	bool isFinal() const;
 
 	int getValue() const;
+
+	Position getLastMove() const;
 	
 	/// <summary>
 	/// Gets the board described by the state.
@@ -44,7 +49,11 @@ public:
 
 	void setFather(const ReversiState* father);
 
+	const PLAYER turn;
+
 private:
+	//use this and this only for computing the value
+	const PLAYER CPU_SYMBOL;
 
 	//hold a pointer to a stack allocated variable,
 	//no memory management needed for changing the pointer
@@ -52,6 +61,5 @@ private:
 
 	const Board board;
 
-	const PLAYER turn;
 };
 
