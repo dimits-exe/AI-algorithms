@@ -2,9 +2,9 @@
 
 using namespace std;
 
-ReversiState::ReversiState(PLAYER p, const Board& other_board) : board(other_board), turn(p) {}
+ReversiState::ReversiState(PLAYER p, PLAYER CPU_SYMBOL, const Board& other_board) : CPU_SYMBOL(CPU_SYMBOL), board(other_board), turn(p) {}
 
-ReversiState::ReversiState(const ReversiState& other): board(other.board), turn(nextTurn(other.turn)) {}
+ReversiState::ReversiState(const ReversiState& other): CPU_SYMBOL(other.CPU_SYMBOL), board(other.board), turn(other.turn) {}
 
 Board ReversiState::getBoard() const {
 	return board;
@@ -23,7 +23,7 @@ double ReversiState::hashCode() const {
 }
 
 size_t ReversiState::HashFunction::operator()(const ReversiState& state) const {
-	return state.hashCode();
+	return (size_t) state.hashCode();
 }
 
 bool ReversiState::isFinal() const {
@@ -32,7 +32,7 @@ bool ReversiState::isFinal() const {
 }
 
 int ReversiState::getValue() const {
-	int score = board.getScore(turn);
+	int score = board.getScore(CPU_SYMBOL);
 	if (isFinal()) { //if game won return infinity depending on who won
 		if (score > 0)
 			return INT_MAX;
@@ -44,6 +44,10 @@ int ReversiState::getValue() const {
 	}
 }
 
+Position ReversiState::getLastMove() const {
+	return board.getLastMove();
+}
+
 list<ReversiState> ReversiState::getChildren() const {
 	list<ReversiState> children;
 
@@ -51,11 +55,11 @@ list<ReversiState> ReversiState::getChildren() const {
 		Board newBoard(this->board);
 		newBoard.makeMove(nextTurn(turn), move);
 
-		ReversiState* newState = new ReversiState(nextTurn(turn), newBoard);
-		newState->setFather(this);
+		ReversiState newState (nextTurn(turn), CPU_SYMBOL, newBoard);
+		newState.setFather(this);
 
-		children.push_back(*newState);
+		children.push_back(newState);
 	}
 
-	return children;
+	return children; //probably the only bottleneck in this program because of the copying h
 }
