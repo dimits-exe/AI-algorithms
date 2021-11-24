@@ -1,9 +1,9 @@
 #pragma once
-#include "Position.h"
+
 #include <vector>
 #include <list>
 #include <utility>
-
+#include "Position.h"
 
 /*An enum describing who occupies a certain square.*/
 enum class PLAYER : char { EMPTY = '-', PLAYER1 = '1', PLAYER2 = '2' }; //define these are constants?
@@ -33,6 +33,8 @@ public:
 	*/
 	void makeMove(PLAYER, Position);
 
+	Position getLastMove() const;
+
 	/*
 	Returns all the valid moves in this board for the next player.
 	*/
@@ -60,6 +62,8 @@ private:
 	int DIMENSION;
 
 	std::vector<std::vector<PLAYER>> gameBoard;
+	
+	Position lastMovePlayed;
 
 	bool IsRangeValid(Position) const;
 
@@ -67,23 +71,25 @@ private:
 	Get a pair containing the furthest pair of player controlled squares in a line.
 	Returns an invalid position if a pair isn't found.
 	*/
-	static std::pair<Position, Position> limits_in_x(PLAYER p, const std::vector<std::vector<PLAYER>>& board, int line);
+	static std::pair<Position, Position> limits_in_x(PLAYER p, const std::vector<std::vector<PLAYER>>& board, Position last_move);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in a row.
 	Returns an invalid position if a pair isn't found.
 	*/
-	static std::pair<Position, Position> limits_in_y(PLAYER p, const std::vector<std::vector<PLAYER>>& board, int row);
+	static std::pair<Position, Position> limits_in_y(PLAYER p, const std::vector<std::vector<PLAYER>>& board, Position last_move);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in the move's square's
 	main diagonal. Returns an invalid position if a pair isn't found.
 	*/
-	static std::pair<Position, Position> limits_in_main_diag(PLAYER, const std::vector<std::vector<PLAYER>>& board, Position);
+	static std::pair<Position, Position> limits_in_main_diag(PLAYER p, const std::vector<std::vector<PLAYER>>& board, Position last_move);
 
 	/*
 	Get a pair containing the furthest pair of player controlled squares in the move's square's
 	secondary diagonal. Returns an invalid position if a pair isn't found.
 	*/
-	static std::pair<Position, Position> limits_in_sec_diag(PLAYER, const std::vector<std::vector<PLAYER>>& board, Position);
+	static std::pair<Position, Position> limits_in_sec_diag(PLAYER, const std::vector<std::vector<PLAYER>>& board, Position last_move);
+
+	static std::pair<Position, Position> limits_everywhere(PLAYER p, const std::vector<std::vector<PLAYER>>& board, Position last_move, int dx, int dy);
 };
