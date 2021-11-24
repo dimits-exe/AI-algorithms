@@ -30,10 +30,6 @@ public:
 
 	bool operator==(const State& other) const;
 
-	struct HashFunction {
-		size_t operator()(const State& state) const;
-	};
-
 	ChildrenIterator begin();
 	ChildrenIterator end();
 
@@ -50,19 +46,24 @@ private:
 
 	void evaluate();
 
-	inline bool get(int row, int col) const {
+	inline bool get(int row, int col) const
+	{
 		return this->data[row * this->dimension + col];
 	}
 
-	inline void set(int row, int col, bool value) const {
+	inline void set(int row, int col, bool value) const
+	{
 		this->data[row * this->dimension + col] = value;
 	}
 
-	inline int findQ(int row) const {
+	inline int findQ(int row) const
+	{
 		int queen_col = 0;
 
-		for (; this->get(row, queen_col) == 0; queen_col++)
-			;
+		for (; this->get(row, queen_col) == false; queen_col++) {
+			if (queen_col == this->dimension)
+				printf("no queen at row: %d\n", row);
+		}
 
 		return queen_col;
 	}

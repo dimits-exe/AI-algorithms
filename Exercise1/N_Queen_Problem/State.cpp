@@ -65,20 +65,20 @@ list<State*>* State::get_children()
 
 		int queen_col = findQ(row);
 
-		set(row, queen_col, 0);
+		set(row, queen_col, false);
 
 		for (int col = 0; col < dim; col++) {
-			set(row, col, 1);
+			set(row, col, true);
 
 			State *child = new State(*this);
 			child->evaluate();
 			child->father = this;
 			children->push_back(child);
 
-			set(row, col, 0);
+			set(row, col, false);
 		}
 
-		set(row, queen_col, 1);
+		set(row, queen_col, true);
 	}
 
 	return children;
@@ -139,17 +139,6 @@ void State::evaluate()
 	}
 }
 
-size_t State::HashFunction::operator()(const State& state) const
-{
-	int hash = 0;
-	for (int row = 0; row < state.dimension; row++) {
-		hash += state.findQ(row);
-		hash *= 10;
-	}
-
-	return hash;
-}
-
 ChildrenIterator State::begin()
 {
 	return ChildrenIterator(*this);
@@ -168,7 +157,7 @@ ChildrenIterator State::end()
 }
 
 ChildrenIterator::ChildrenIterator(const State& state)
-	: original_state(state), generated_state(nullptr), cx(0), cy(0), qy(-1) { }
+	: original_state(state), generated_state(nullptr), cx(0), cy(0), qy(state.findQ(0)) { }
 
 ChildrenIterator::~ChildrenIterator() { }
 
@@ -182,7 +171,7 @@ ChildrenIterator& ChildrenIterator::operator++()
 		cy++;
 
 		// if column is outside of board limits
-		if (cy == original_state.dimension) {
+		if (cy >= original_state.dimension) {
 
 			// advance row
 			cx++;
@@ -229,16 +218,17 @@ State* ChildrenIterator::operator*()
 		return generated_state;
 
 	// set row with queen at current position (cx, cy)
-	original_state.set(cx, qy, 0);
-	original_state.set(cx, cy, 1);
+	original_state.set(cx, qy, false);
+	original_state.set(cx, cy, true);
 
 	// generate new State with queen at new position and cache it
 	generated_state = new State(original_state);
 
 	// reset row with queen at original position (cx, qy)
-	original_state.set(cx, cy, 0);
-	original_state.set(cx, qy, 1);
+	original_state.set(cx, cy, false);
+	original_state.set(cx, qy, true);
 
 	generated_state->evaluate();
 	return generated_state;
 }
+
