@@ -14,17 +14,17 @@ using namespace std;
 void makePlayerMove(PLAYER turn, Board& currentBoard);
 
 int main(void) {
-	cout << WELCOME_MSG << endl;
+	std::cout << WELCOME_MSG << endl;
 
 	int depth = -1;
 	do {
-		cout << SELECT_DEPTH;
+		std::cout << SELECT_DEPTH;
 		cin >> depth;
 	} while (depth <0 && depth > MAX_VALID_DEPTH);
 
 	string answer;
 	do {
-		cout << SELECT_TURN;
+		std::cout << SELECT_TURN;
 		cin >> answer;
 	} while (answer != "y" && answer != "n" && answer != "Y" && answer != "N");
 
@@ -38,19 +38,38 @@ int main(void) {
 	PLAYER turn = PLAYER::PLAYER1;
 	Board gameBoard(8);
 
+	std::cout << "CPU symbol: " << static_cast<char>(CPU) << endl;
+	std::cout << "Player symbol: " << static_cast<char>(nextTurn(CPU)) << endl;
+
 	//main game loop
 	while (gameBoard.getValidMoves(PLAYER::PLAYER1).size() != 0 &&
-		gameBoard.getValidMoves(PLAYER::PLAYER2).size() != 0) { //crashes here, board's array size is 0
+		gameBoard.getValidMoves(PLAYER::PLAYER2).size() != 0) { 
 
-		if (turn == CPU)
-			gameBoard = mini_max(turn, gameBoard, depth);
-		else
+		if (turn == CPU) {
+			cout << "Calculating next move..." << endl;
+			Position move = mini_max(turn, gameBoard, depth);
+			if (Position::is_invalid(move))
+				std::cout << "No possible moves for the computer." << endl;
+			else {
+				try {
+					gameBoard.makeMove(turn, move);
+				}
+				catch (logic_error e) {
+					std::cout << e.what() << endl;
+				}
+			}
+				
+		}	
+		else {
 			makePlayerMove(turn, gameBoard);
+		}
+			
 
 		turn = nextTurn(turn);
 	}
 
-	cout << "Player "<< static_cast<char>(turn) << " won!" << endl;
+	std::cout << "Player "<< static_cast<char>(turn) << " won!" << endl;
+	std::cout << gameBoard.toString() << endl;
 
 	return 0;
 }
@@ -59,24 +78,30 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 	int x, y;
 	bool succeded = true;
 
-	cout << currentBoard.toString();
+	if (currentBoard.getValidMoves(turn).size() == 0) {
+		std::cout << "No possible moves for the player" << endl;
+		return;
+	}
+
+	std::cout << currentBoard.toString();
 	do {
-		cout << MAKE_MOVE;
+		std::cout << MAKE_MOVE;
 		cin >> y >> x;
-		cout << "The player played " << y << '-' << x << endl;
+		std::cout << "The player played " << y << '-' << x << endl;
 		x--; y--; //convert to 1-8 range
 
 		if (x <= 0 || x > 8 || y <= 0 || y > 8) {
-			cout << WRONG_MOVE << endl;
+			std::cout << WRONG_MOVE << endl;
 			succeded = false;
 		}
 		else {
 			try {
 				currentBoard.makeMove(turn, Position(x, y));
 				succeded = true;
+				cout << currentBoard.toString() << endl;
 			}
 			catch (logic_error e) {
-				cout << e.what() << endl;
+				std::cout << e.what() << endl;
 				succeded = false;
 			}
 		}
