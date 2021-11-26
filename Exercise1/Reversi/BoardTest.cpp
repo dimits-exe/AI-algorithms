@@ -1,18 +1,48 @@
 #include <iostream>
 #include "Board.h"
 #include <vector>
+#include <string>
 
 using namespace std;
 
-pair<Position, Position> limits_in_x(PLAYER p, vector<vector<PLAYER>>& board, int line);
-pair<Position, Position> limits_in_y(PLAYER p, vector<vector<PLAYER>>& board, int row);
-pair<Position, Position> limits_in_main_diag(PLAYER player, vector<vector<PLAYER>>& board, Position pos);
-pair<Position, Position> limits_in_sec_diag(PLAYER player, vector<vector<PLAYER>>& board, Position pos);
-string toString(vector<vector<PLAYER>>&);
+pair<Position, Position> limits_in_x(PLAYER, const vector<vector<PLAYER>>& board, Position);
+pair<Position, Position> limits_in_y(PLAYER, const vector<vector<PLAYER>>& board, Position);
+pair<Position, Position> limits_in_main_diag(PLAYER, const vector<vector<PLAYER>>& board, Position);
+pair<Position, Position> limits_in_sec_diag(PLAYER, const vector<vector<PLAYER>>& board, Position);
+pair<Position, Position> limits_everywhere(PLAYER, const vector<vector<PLAYER>>& board, Position, int dx, int dy);
+void testBoard();
+void testLimits();
+string ts(vector<vector<PLAYER>>&);
+
+void p(string str, vector<vector<PLAYER>>& board) {
+	cout << str << endl << ts(board) << endl;
+}
+
+void pp(string str, pair<Position, Position> lim) {
+	cout << str << ": " << lim.first.X() << "-" << lim.first.Y() << " " << lim.second.X() << "-" << lim.second.Y() << endl;
+}
+
+void pl(vector<vector<PLAYER>>& board, Position move, PLAYER pl) {
+	board[move.Y()][move.X()] = pl;
+
+	cout << "played " << move.X() << "-" << move.Y() << " as player: " << static_cast<char>(pl) << " on board:" << endl;
+	p("", board);
+}
+
+void ptfl(int x, int y, PLAYER p, vector<vector<PLAYER>>& board) {
+	Position move(x, y);
+	cout << endl << endl;
+	pl(board, move, p);
+
+	pp("xlim", limits_in_x(p, board, move));
+	pp("ylim", limits_in_y(p, board, move));
+	pp("dia1", limits_in_main_diag(p, board, move));
+	pp("dia2", limits_in_sec_diag(p, board, move));
+}
 
 int main() {
-	//testLimits();
-	testBoard();
+	testLimits();
+	// testBoard();
 	return 0;
 }
 
@@ -47,6 +77,8 @@ void testLimits() {
 	int DIMENSION = 8;
 	vector<vector<PLAYER>> gameBoard;
 
+	PLAYER P1 = PLAYER::PLAYER1, P2 = PLAYER::PLAYER2, PE = PLAYER::EMPTY;
+
 	//construct vectors and initialize all squares to empty
 	for (int i = 0; i < DIMENSION; i++) {
 		gameBoard.push_back(vector<PLAYER>(DIMENSION));
@@ -56,195 +88,122 @@ void testLimits() {
 	}
 
 	//initial board setup
-	Position middleSquare((DIMENSION - 1) / 2, (DIMENSION - 1) / 2);
-	gameBoard[middleSquare.X()][middleSquare.Y()] = PLAYER::PLAYER1;
-	gameBoard[middleSquare.X() + 1][middleSquare.Y() + 1] = PLAYER::PLAYER1;
-	gameBoard[middleSquare.X() + 1][middleSquare.Y()] = PLAYER::PLAYER2;
-	gameBoard[middleSquare.X()][middleSquare.Y() + 1] = PLAYER::PLAYER2;
+	gameBoard[3][3] = PLAYER::PLAYER1;
+	gameBoard[3][4] = PLAYER::PLAYER1;
+	gameBoard[3][5] = PLAYER::PLAYER2;
+	gameBoard[4][3] = PLAYER::PLAYER1;
+	gameBoard[4][4] = PLAYER::PLAYER2;
 
-	//test x
-	gameBoard[3][5] = PLAYER::PLAYER1;
-	cout << toString(gameBoard) << endl;
+	p("initial", gameBoard);
 
-	pair<Position, Position> x_limit = limits_in_x(PLAYER::PLAYER1, gameBoard, 3);
-	cout << x_limit.first.Y() << "-" << x_limit.first.X() << " " << x_limit.second.Y() << "-" << x_limit.second.X() << endl;
-
-	gameBoard[3][5] = PLAYER::EMPTY;
-
-	//test y
-	gameBoard[2][3] = PLAYER::PLAYER2;
-	cout << toString(gameBoard) << endl;
-
-	pair<Position, Position> y_limit = limits_in_y(PLAYER::PLAYER2, gameBoard, 3);
-	cout << y_limit.first.Y() << "-" << y_limit.first.X() << " " << y_limit.second.Y() << "-" << y_limit.second.X() << endl;
-
-	gameBoard[2][3] = PLAYER::EMPTY;
-
-	//main diag
-	gameBoard[2][2] = PLAYER::PLAYER2;
-	gameBoard[5][5] = PLAYER::PLAYER2;
-	cout << toString(gameBoard) << endl;
-
-	pair<Position, Position> m_diag_limit = limits_in_main_diag(PLAYER::PLAYER2, gameBoard, Position(5, 5));
-	cout << m_diag_limit.first.Y() << "-" << m_diag_limit.first.X() << " " << m_diag_limit.second.Y() << "-" << m_diag_limit.second.X() << endl;
-
-	gameBoard[2][2] = PLAYER::EMPTY;
-	gameBoard[5][5] = PLAYER::EMPTY;
-
-	//SEC diag
-	gameBoard[5][2] = PLAYER::PLAYER1;
-	gameBoard[2][5] = PLAYER::PLAYER1;
-	cout << toString(gameBoard) << endl;
-
-	pair<Position, Position> sex_diag_limit = limits_in_sec_diag(PLAYER::PLAYER1, gameBoard, Position(5, 2));
-	cout << sex_diag_limit.first.Y() << "-" << sex_diag_limit.first.X() << " " << sex_diag_limit.second.Y() << "-" << sex_diag_limit.second.X() << endl;
-
-	gameBoard[5][2] = PLAYER::EMPTY;
-	gameBoard[2][5] = PLAYER::EMPTY;
+	ptfl(2, 2, P2, gameBoard);
+	ptfl(3, 2, P1, gameBoard);
+	ptfl(4, 2, P2, gameBoard);
+	ptfl(5, 2, P1, gameBoard);
+	ptfl(2, 3, P2, gameBoard);
+	ptfl(2, 4, P1, gameBoard);
+	ptfl(2, 5, P2, gameBoard);
+	ptfl(3, 5, P1, gameBoard);
+	ptfl(4, 5, P2, gameBoard);
+	ptfl(5, 5, P1, gameBoard);
+	ptfl(6, 1, P2, gameBoard);
+	ptfl(7, 0, P1, gameBoard);
+	ptfl(5, 1, P2, gameBoard);
+	ptfl(4, 1, P2, gameBoard);
+	ptfl(4, 0, P1, gameBoard);
+	ptfl(5, 0, P2, gameBoard);
+	ptfl(6, 0, P1, gameBoard);
+	ptfl(6, 2, P1, gameBoard);
+	ptfl(3, 0, P1, gameBoard);
+	ptfl(3, 1, P1, gameBoard);
+	ptfl(2, 1, P1, gameBoard);
+	ptfl(2, 0, P2, gameBoard);
+	ptfl(7, 7, P1, gameBoard);
 }
 
+pair<Position, Position> limits_everywhere(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move, int dx, int dy)
+{
+	auto get_range = [](int min, int max) {
+		return [min, max](int value) {
+			return (min <= value) && (value < max);
+		};
+	};
 
-pair<Position, Position> limits_in_x(PLAYER p, vector<vector<PLAYER>>& board, int line) {
-	int x_start = -1;
-	int x_end = -1;
+	int max = board.size();
+	auto check_range = get_range(0, max);
 
-	for (int i = 0; i < board.size(); i++) {
-		if (board[line][i] == p) {
+	int sx = last_move.X(), sy = last_move.Y(), ex = last_move.X(), ey = last_move.Y();
 
-			if (x_start == -1) {
-				x_start = i;
+	bool found_other = false;
+
+	int i = sx - dx;
+	int j = sy - dy;
+	for (; check_range(i) && check_range(j) && board[j][i] != PLAYER::EMPTY; i -= dx, j -= dy)
+	{
+		if (board[j][i] == nextTurn(p))
+			found_other = true;
+
+		if (board[j][i] == p) {
+			if (found_other) {
+				sx = i;
+				sy = j;
 			}
-			else {
-				x_end = i;
-			}
-
+			break;
 		}
 	}
 
-	if (x_end == -1) //if x_start == -1 then always x_end == -1
-		return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-	else
-		return pair<Position, Position>(Position(x_start, line), Position(x_end, line));
-}
+	found_other = false;
 
-pair<Position, Position> limits_in_y(PLAYER p, vector<vector<PLAYER>>& board, int row) {
-	int y_start = -1;
-	int y_end = -1;
+	i = ex + dx;
+	j = ey + dy;
+	for (; check_range(i) && check_range(j) && board[j][i] != PLAYER::EMPTY; i += dx, j += dy)
+	{
+		if (board[j][i] == nextTurn(p))
+			found_other = true;
 
-	for (int i = 0; i < board.size(); i++) {
-		if (board[i][row] == p) {
-
-			if (y_start == -1) {
-				y_start = i;
+		if (board[j][i] == p) {
+			if (found_other) {
+				ex = i;
+				ey = j;
 			}
-			else {
-				y_end = i;
-			}
-
+			break;
 		}
 	}
 
-	if (y_end == -1) //if y_start == -1 then always y_end == -1
-		return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-	else
-		return pair<Position, Position>(Position(row, y_start), Position(row, y_end));
+	return pair<Position, Position>(Position(sx, sy), Position(ex, ey));
 }
 
-//TODO FIX STARTING VALUES
-pair<Position, Position> limits_in_main_diag(PLAYER player, vector<vector<PLAYER>>& board, Position pos) {
-	int x_start = -1;
-	int x_end = -1;
-	int y_start = -1;
-	int y_end = -1;
-
-	int curr_x;
-	int curr_y;
-
-	//find start of diagonals
-	if (pos.X() > pos.Y()) {
-		curr_y = 0;
-		curr_x = pos.X() - pos.Y();		
-	}
-	else {
-		curr_x = 0;
-		curr_y = pos.Y() - pos.X();
-	}
-	cout << "start of main diag: " << curr_y << "-" << curr_x << endl;
-
-	//start scanning
-	while (curr_x < board.size() && curr_y < board.size()) {
-		if (board[curr_y][curr_x] == player) {
-
-			if (x_start == -1) {
-				x_start = curr_x;
-				y_start = curr_y;
-			}
-			else {
-				x_end = curr_x;
-				y_end = curr_y;
-			}
-
-		}
-		curr_x++;
-		curr_y++;
-	}
-
-	if (y_end == -1) //if y_start == -1 then always y_end == -1
-		return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-	else
-		return pair<Position, Position>(Position(x_start, y_start), Position(x_end, y_end));
+pair<Position, Position> limits_in_x(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
+{
+	return limits_everywhere(p, board, last_move, 1, 0);
 }
 
-//TODO FIX STARTING VALUES
-pair<Position, Position> limits_in_sec_diag(PLAYER player, vector<vector<PLAYER>>& board, Position pos) {
-	int x_start = -1;
-	int x_end = -1;
-	int y_start = -1;
-	int y_end = -1;
-
-	int curr_x = pos.X();
-	int curr_y = pos.Y();
-
-	//seek start of diagonal
-	while (curr_x > 0 && curr_y < board.size()) {
-		curr_x--;
-		curr_y++;
-	}
-
-	cout << "start of sec diag: " << curr_y << "-" << curr_x << endl;
-
-	//start scanning
-	while (curr_x < board.size() && curr_y >= 0) {
-		cout << "square " << curr_y << "-" << curr_x << ((board[curr_y][curr_x] == player) ? " is" : " is not") << " player controlled" << endl;
-		if (board[curr_y][curr_x] == player) {
-
-			if (x_start == -1) {
-				x_start = curr_x;
-				y_start = curr_y;
-			}
-			else {
-				x_end = curr_x;
-				y_end = curr_y;
-			}
-
-		}
-		curr_x++;
-		curr_y--;
-	}
-
-	cout << "end of sec diag: " << y_end << "-" << x_end << endl;
-
-	if (y_end == -1) //if y_start == -1 then always y_end == -1
-		return pair<Position, Position>(Position::create_invalid(), Position::create_invalid());
-	else
-		return pair<Position, Position>(Position(x_start, y_start), Position(x_end, y_end));
+pair<Position, Position> limits_in_y(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
+{
+	return limits_everywhere(p, board, last_move, 0, 1);
 }
 
-string toString(vector<vector<PLAYER>>& gameBoard) {
-	string str;
+pair<Position, Position> limits_in_main_diag(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
+{
+	return limits_everywhere(p, board, last_move, 1, 1);
+}
+
+pair<Position, Position> limits_in_sec_diag(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
+{
+	return limits_everywhere(p, board, last_move, 1, -1);
+}
+
+string ts(vector<vector<PLAYER>>& gameBoard) {
+	string str(" ");
 	int DIMENSION = gameBoard.size();
 
+	//build horizontal header
+	for (int i = 0; i < DIMENSION; i++)
+		str += to_string(i) + " ";
+	str += "\n";
+
 	for (int i = 0; i < DIMENSION; i++) {
+		str += to_string(i);
 		for (int j = 0; j < DIMENSION; j++) {
 			str += static_cast<char>(gameBoard[i][j]); //append player character
 			str += " ";
@@ -255,3 +214,4 @@ string toString(vector<vector<PLAYER>>& gameBoard) {
 	//returning by value is efficient in strings
 	return str;
 }
+
