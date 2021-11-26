@@ -65,6 +65,7 @@ bool Board::isValidMove(PLAYER p, Position move) const {
 	vector<vector<PLAYER>> testBoard(gameBoard);
 	testBoard[move.Y()][move.X()] = p;
 
+
 	bool x_cor = true;
 	bool y_cor = true;
 	bool diag_1_cor = true;
@@ -86,7 +87,15 @@ bool Board::isValidMove(PLAYER p, Position move) const {
 	if (move_diag_2.first.X() == move_diag_2.second.X())
 		diag_2_cor = false;
 
-	return x_cor || y_cor || diag_1_cor || diag_2_cor;
+	bool valid_move = x_cor || y_cor || diag_1_cor || diag_2_cor;
+
+	if (valid_move) {
+		Board delet(*this);
+		cout << "playing: " << move.X() << move.Y() << " on board:" << endl << delet.toString() << endl;
+		cout << x_cor << y_cor << diag_1_cor << diag_2_cor << endl;
+	}
+
+	return valid_move;
 }
 
 void Board::makeMove(PLAYER p, Position move) {
@@ -215,51 +224,58 @@ bool Board::IsRangeValid(Position move) const {
 		&& move.X() >= 0 && move.Y() >= 0;
 }
 
-auto get_range(int min, int max) {
-	return [min, max](int value) {
-		return (min <= value) && (value < max);
-	};
-}
-
 pair<Position, Position> Board::limits_everywhere(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move, int dx, int dy)
 {
+	auto get_range = [](int min, int max) {
+		return [min, max](int value) {
+			return (min <= value) && (value < max);
+		};
+	};
+
 	int max = board.size();
 	auto check_range = get_range(0, max);
 
 	int sx = last_move.X(), sy = last_move.Y(), ex = last_move.X(), ey = last_move.Y();
 
-	if (check_range(sx - dx) && check_range(sy - dy))
-		// if (sx - dx >= 0 && sy - dy >= 0)
+	bool found_other = false;
+
+	int i = sx - dx;
+	int j = sy - dy;
+	for (; check_range(i) && check_range(j) && board[j][i] != PLAYER::EMPTY; i -= dx, j -= dy)
 	{
-		int i = sx - dx;
-		int j = sy - dy;
-		for (; check_range(i) && check_range(j) && board[j][i] != PLAYER::EMPTY; i -= dx, j -= dy)
-		{
-			if (board[j][i] == p) {
+		if (board[j][i] == nextTurn(p))
+			found_other = true;
+
+		if (board[j][i] == p) {
+			if (found_other) {
 				sx = i;
 				sy = j;
-				break;
 			}
+			break;
 		}
 	}
 
-	if (check_range(ex + dx) && check_range(ey + dy))
-		// if (ex + dx < max && ey + dy < max)
+	found_other = false;
+
+	i = ex + dx;
+	j = ey + dy;
+	for (; check_range(i) && check_range(j) && board[j][i] != PLAYER::EMPTY; i += dx, j += dy)
 	{
-		int i = ex + dx;
-		int j = ey + dy;
-		for (; check_range(i) && check_range(j) && board[j][i] != PLAYER::EMPTY; i += dx, j += dy)
-		{
-			if (board[j][i] == p) {
+		if (board[j][i] == nextTurn(p))
+			found_other = true;
+
+		if (board[j][i] == p) {
+			if (found_other) {
 				ex = i;
 				ey = j;
-				break;
 			}
+			break;
 		}
 	}
 
 	return pair<Position, Position>(Position(sx, sy), Position(ex, ey));
 }
+
 pair<Position, Position>  Board::limits_in_x(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
 {
 	return limits_everywhere(p, board, last_move, 1, 0);
