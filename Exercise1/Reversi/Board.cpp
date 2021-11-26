@@ -89,9 +89,8 @@ bool Board::isValidMove(PLAYER p, Position move) const {
 
 	bool valid_move = x_cor || y_cor || diag_1_cor || diag_2_cor;
 
-	if (valid_move) {
-		Board delet(*this);
-		cout << "playing: " << move.X() << move.Y() << " on board:" << endl << delet.toString() << endl;
+	if (false && valid_move) {
+		cout << "playing: " << move.X() << move.Y() << " on board:" << endl << this->toString() << endl;
 		cout << x_cor << y_cor << diag_1_cor << diag_2_cor << endl;
 	}
 
@@ -295,3 +294,4 @@ pair<Position, Position>  Board::limits_in_sec_diag(PLAYER p, const vector<vecto
 {
 	return limits_everywhere(p, board, last_move, 1, -1);
 }
+
