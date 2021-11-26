@@ -13,6 +13,8 @@ using namespace std;
 
 void makePlayerMove(PLAYER turn, Board& currentBoard);
 
+// #define Game
+#ifdef Game
 int main(void) {
 	std::cout << WELCOME_MSG << endl;
 
@@ -73,6 +75,7 @@ int main(void) {
 
 	return 0;
 }
+#endif
 
 void makePlayerMove(PLAYER turn, Board& currentBoard) {
 	int x, y;

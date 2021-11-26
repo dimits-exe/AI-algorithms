@@ -40,11 +40,14 @@ void ptfl(int x, int y, PLAYER p, vector<vector<PLAYER>>& board) {
 	pp("dia2", limits_in_sec_diag(p, board, move));
 }
 
+// #define BoardTest
+#ifdef BoardTest
 int main() {
 	testLimits();
 	// testBoard();
 	return 0;
 }
+#endif
 
 void testBoard() {
 	Board board(8);
