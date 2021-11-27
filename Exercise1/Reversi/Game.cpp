@@ -2,12 +2,12 @@
 #include <iostream>
 
 #define INPUT_SYMBOL		"\n>"
-#define WELCOME_MSG		"Welcome to Reversi! This is a singleplayer game where you get to play against an AI."
-#define SELECT_DEPTH		"Please select the depth of the algorithm (1-7)" INPUT_SYMBOL
-#define SELECT_TURN		"Do you want to play first? (y/n)" INPUT_SYMBOL
-#define MAKE_MOVE		"Play the next move (X, then Y coordinates)." INPUT_SYMBOL
-#define WRONG_MOVE		"This move is invalid."
-#define MAX_VALID_DEPTH		7
+#define WELCOME_MSG			"Welcome to Reversi! This is a singleplayer game where you get to play against an AI."
+#define SELECT_DEPTH		"Please select the depth of the algorithm (1-10)" INPUT_SYMBOL
+#define SELECT_TURN			"Do you want to play first? (y/n)" INPUT_SYMBOL
+#define MAKE_MOVE			"Play the next move (X, then Y coordinates)." INPUT_SYMBOL
+#define WRONG_MOVE			"This move is invalid."
+#define MAX_VALID_DEPTH		10
 
 using namespace std;
 
@@ -20,7 +20,7 @@ int main(void) {
 	do {
 		std::cout << SELECT_DEPTH;
 		cin >> depth;
-	} while (depth <= 0 && depth > MAX_VALID_DEPTH);
+	} while (depth <= 0 || depth > MAX_VALID_DEPTH);
 
 	string answer;
 	do {
@@ -44,6 +44,7 @@ int main(void) {
 	//main game loop
 	while (gameBoard.getValidMoves(PLAYER::PLAYER1).size() != 0 &&
 		gameBoard.getValidMoves(PLAYER::PLAYER2).size() != 0) { 
+		cout << " Current Board: \n" << gameBoard.toString() << endl;
 
 		if (turn == CPU) {
 			cout << "Calculating next move..." << endl;
@@ -54,15 +55,14 @@ int main(void) {
 			}
 			else {
 				gameBoard.makeMove(turn, move);
-				cout << "The Computer played Y=" << move.X()+1 << " X=" << move.Y()+1 << endl;
+				cout << "The Computer played " << Position(move.X() +1, move.Y()+1) << endl;
 			}
 				
 		}	
 		else {
 			makePlayerMove(turn, gameBoard);
 		}
-			
-		cout << " Current Board: \n" << gameBoard.toString() << endl;
+		
 		turn = nextTurn(turn);
 	}
 
@@ -84,10 +84,10 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 	do {
 		std::cout << MAKE_MOVE;
 		cin >> x >> y;
-		std::cout << "The player played " << x << '-' << y << endl;
+		std::cout << "The player played " << Position(x, y) << endl;
 		x--; y--; //convert to 0-7 range
 
-		if (x <= 0 || x > 8 || y <= 0 || y > 8) {
+		if (x < 0 || x > 7 || y < 0 || y > 7) {
 			std::cout << WRONG_MOVE << endl;
 			succeded = false;
 		}
