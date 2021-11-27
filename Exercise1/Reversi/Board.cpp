@@ -120,7 +120,7 @@ void Board::makeMove(PLAYER p, Position move) {
 	//flip all pieces to the player's control
 	int curr_x = main_diag.first.X();
 	int curr_y = main_diag.first.Y();
-	while (curr_x <= main_diag.second.X() && curr_y < main_diag.second.Y()) {
+	while (curr_x < main_diag.second.X() && curr_y < main_diag.second.Y()) {
 		gameBoard[curr_y][curr_x] = p;
 		curr_x++;
 		curr_y++;
@@ -128,11 +128,11 @@ void Board::makeMove(PLAYER p, Position move) {
 	}
 
 
-	//check pairs on the right_to_left diagonal 
+	//check pairs on the right-to-left diagonal 
 	pair<Position, Position> sec_diag = limits_in_sec_diag(p, gameBoard, move);
 	curr_x = sec_diag.first.X();
 	curr_y = sec_diag.first.Y();
-	while (curr_x <= sec_diag.second.X() && curr_y >= 0) {
+	while (curr_x < sec_diag.second.X() && curr_y >= 0) {
 		gameBoard[curr_y][curr_x] = p;
 		curr_x++;
 		curr_y--;
@@ -141,6 +141,7 @@ void Board::makeMove(PLAYER p, Position move) {
 
 	if (!pair_exists) {
 		gameBoard[move.Y()][move.X()] = prevValue;
+		//remove this after testing
 		throw logic_error("Invalid move x=" + std::to_string(move.X()) + " y=" + std::to_string(move.Y()) + " in board \n" + toString());
 	}
 	else {
