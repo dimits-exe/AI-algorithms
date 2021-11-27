@@ -1,6 +1,5 @@
 #include "Board.h"
 #include <string> 
-#include <iostream>
 
 using namespace std;
 
@@ -14,15 +13,15 @@ Board::Board(int size) : DIMENSION(size) {
 	}
 
 	//initial board setup
-	Position middleSquare((DIMENSION - 1)/2, (DIMENSION - 1) /2);
+	Position middleSquare((DIMENSION - 1) / 2, (DIMENSION - 1) / 2);
 	gameBoard[middleSquare.X()][middleSquare.Y()] = PLAYER::PLAYER1;
-	gameBoard[middleSquare.X()+1][middleSquare.Y()+1] = PLAYER::PLAYER1;
-	gameBoard[middleSquare.X()+1][middleSquare.Y()] = PLAYER::PLAYER2;
-	gameBoard[middleSquare.X()][middleSquare.Y()+1] = PLAYER::PLAYER2;
+	gameBoard[middleSquare.X() + 1][middleSquare.Y() + 1] = PLAYER::PLAYER1;
+	gameBoard[middleSquare.X() + 1][middleSquare.Y()] = PLAYER::PLAYER2;
+	gameBoard[middleSquare.X()][middleSquare.Y() + 1] = PLAYER::PLAYER2;
 }
 
-Board::Board(const Board& oldBoard) { 
-	*this = oldBoard; 
+Board::Board(const Board& oldBoard) {
+	*this = oldBoard;
 }
 
 void Board::operator=(const Board& other) {
@@ -35,7 +34,7 @@ Position Board::getLastMove() const {
 	return lastMovePlayed;
 }
 
-list<Position> Board::getValidMoves(PLAYER p) const{
+list<Position> Board::getValidMoves(PLAYER p) const {
 	list<Position> ls;
 
 	//exhaust all options, fuck performance
@@ -52,7 +51,7 @@ list<Position> Board::getValidMoves(PLAYER p) const{
 
 	//copy the whole list and return it
 	//valid moves should be few enough to make returning by value efficient
-	return ls; 
+	return ls;
 }
 
 bool Board::isValidMove(PLAYER p, Position move) const {
@@ -72,36 +71,29 @@ bool Board::isValidMove(PLAYER p, Position move) const {
 	bool diag_2_cor = true;
 
 	pair<Position, Position> move_x = limits_in_x(p, testBoard, move);
-	if (move_x.first.X() == move_x.second.X())
+	if (abs(move_x.second.X() - move_x.first.X()) <= 1)
 		x_cor = false;
 
 	pair<Position, Position> move_y = limits_in_y(p, testBoard, move);
-	if (move_y.first.Y() == move_y.second.Y())
+	if (abs(move_y.second.Y() - move_y.first.Y()) <= 1)
 		y_cor = false;
 
 	pair<Position, Position> move_diag_1 = limits_in_main_diag(p, testBoard, move);
-	if (move_diag_1.first.X() == move_diag_1.second.X())
+	if (abs(move_diag_1.first.X() - move_diag_1.second.X()) <= 1)
 		diag_1_cor = false;
 
 	pair<Position, Position> move_diag_2 = limits_in_sec_diag(p, testBoard, move);
-	if (move_diag_2.first.X() == move_diag_2.second.X())
+	if (abs(move_diag_2.first.X() - move_diag_2.second.X()) <= 1)
 		diag_2_cor = false;
 
-	bool valid_move = x_cor || y_cor || diag_1_cor || diag_2_cor;
-
-	if (false && valid_move) {
-		cout << "playing: " << move.X() << move.Y() << " on board:" << endl << this->toString() << endl;
-		cout << x_cor << y_cor << diag_1_cor << diag_2_cor << endl;
-	}
-
-	return valid_move;
+	return x_cor || y_cor || diag_1_cor || diag_2_cor;
 }
 
 void Board::makeMove(PLAYER p, Position move) {
 	bool pair_exists = false;
 	PLAYER prevValue = gameBoard[move.Y()][move.X()];
-	
-	if(prevValue != PLAYER::EMPTY)
+
+	if (prevValue != PLAYER::EMPTY)
 		throw logic_error("The selected square isn't empty");
 
 	gameBoard[move.Y()][move.X()] = p;
@@ -114,7 +106,7 @@ void Board::makeMove(PLAYER p, Position move) {
 		gameBoard[move.Y()][i] = p;
 		pair_exists = true;
 	}
-	
+
 	//check pairs on the y axis
 	pair<Position, Position> y_axis = limits_in_y(p, gameBoard, move);
 	//flip all pieces to the player's control
@@ -122,7 +114,7 @@ void Board::makeMove(PLAYER p, Position move) {
 		gameBoard[i][move.X()] = p;
 		pair_exists = true;
 	}
-	
+
 	//check pairs on the left-to-right diagonal 
 	pair<Position, Position> main_diag = limits_in_main_diag(p, gameBoard, move);
 	//flip all pieces to the player's control
@@ -134,28 +126,26 @@ void Board::makeMove(PLAYER p, Position move) {
 		curr_y++;
 		pair_exists = true;
 	}
-	
-	
+
+
 	//check pairs on the right_to_left diagonal 
 	pair<Position, Position> sec_diag = limits_in_sec_diag(p, gameBoard, move);
 	curr_x = sec_diag.first.X();
-	curr_y = sec_diag.second.Y();
-	while (curr_x <= sec_diag.second.X() && curr_y <= sec_diag.second.Y()
-		&& curr_y >= 0) {
+	curr_y = sec_diag.first.Y();
+	while (curr_x <= sec_diag.second.X() && curr_y >= 0) {
 		gameBoard[curr_y][curr_x] = p;
 		curr_x++;
 		curr_y--;
 		pair_exists = true;
 	}
-	
-	//if (!pair_exists) {
-		//gameBoard[move.Y()][move.X()] = prevValue;
-		//throw logic_error("Invalid move x=" + std::to_string(move.X()) + " y=" + std::to_string(move.Y()) + " in board \n" + toString());
-	//}
-	//else {
-		//lastMovePlayed = move;
-	//}
-	lastMovePlayed = move;
+
+	if (!pair_exists) {
+		gameBoard[move.Y()][move.X()] = prevValue;
+		throw logic_error("Invalid move x=" + std::to_string(move.X()) + " y=" + std::to_string(move.Y()) + " in board \n" + toString());
+	}
+	else {
+		lastMovePlayed = move;
+	}
 }
 
 double Board::hashcode() const {
@@ -195,10 +185,10 @@ int Board::getScore(PLAYER p) const {
 	else if (p == PLAYER::PLAYER2)
 		return pl2Count - pl1Count;
 }
-			
+
 
 string Board::toString() const {
-	string str (" ");
+	string str(" ");
 
 	//build horizontal header
 	for (int i = 1; i <= DIMENSION; i++)
@@ -206,7 +196,7 @@ string Board::toString() const {
 	str += "\n";
 
 	for (int i = 0; i < DIMENSION; i++) {
-		str += to_string(i+1);
+		str += to_string(i + 1);
 		for (int j = 0; j < DIMENSION; j++) {
 			str += static_cast<char>(gameBoard[i][j]); //append player character
 			str += " ";
@@ -223,8 +213,7 @@ bool Board::IsRangeValid(Position move) const {
 		&& move.X() >= 0 && move.Y() >= 0;
 }
 
-pair<Position, Position> Board::limits_everywhere(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move, int dx, int dy)
-{
+pair<Position, Position> Board::limits_everywhere(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move, int dx, int dy){
 	auto get_range = [](int min, int max) {
 		return [min, max](int value) {
 			return (min <= value) && (value < max);
@@ -275,23 +264,18 @@ pair<Position, Position> Board::limits_everywhere(PLAYER p, const vector<vector<
 	return pair<Position, Position>(Position(sx, sy), Position(ex, ey));
 }
 
-pair<Position, Position>  Board::limits_in_x(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
-{
+pair<Position, Position>  Board::limits_in_x(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move){
 	return limits_everywhere(p, board, last_move, 1, 0);
 }
 
-pair<Position, Position>  Board::limits_in_y(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
-{
+pair<Position, Position>  Board::limits_in_y(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move){
 	return limits_everywhere(p, board, last_move, 0, 1);
 }
 
-pair<Position, Position>  Board::limits_in_main_diag(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
-{
+pair<Position, Position>  Board::limits_in_main_diag(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move){
 	return limits_everywhere(p, board, last_move, 1, 1);
 }
 
-pair<Position, Position>  Board::limits_in_sec_diag(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move)
-{
+pair<Position, Position>  Board::limits_in_sec_diag(PLAYER p, const vector<vector<PLAYER>>& board, Position last_move){
 	return limits_everywhere(p, board, last_move, 1, -1);
 }
-
