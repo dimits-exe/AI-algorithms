@@ -1,12 +1,15 @@
 #pragma once
+#include "Position.h"
 
 #include <vector>
 #include <list>
 #include <utility>
-#include "Position.h"
 
-/*An enum describing who occupies a certain square.*/
-enum class PLAYER : char { EMPTY = '-', PLAYER1 = '1', PLAYER2 = '2' }; //define these are constants?
+
+/// <summary>
+/// An enum describing who occupies a certain square.
+/// </summary>
+enum class PLAYER : char { EMPTY = '-', PLAYER1 = '@', PLAYER2 = 'X' }; 
 
 inline PLAYER nextTurn(PLAYER currentTurn) {
 	if (currentTurn == PLAYER::PLAYER1)
