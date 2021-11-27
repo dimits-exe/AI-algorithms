@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Info::Info(int maxDepth):MAX_DEPTH(maxDepth), move_made(Position(-1, -1)) {}
+Info::Info(int maxDepth):MAX_DEPTH(maxDepth), move_made(Position::create_invalid()) {}
 
 Position mini_max(PLAYER turn, const Board starting_board, int max_depth) {
 	unordered_set <ReversiState, ReversiState::HashFunction> state_set;
