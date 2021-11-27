@@ -3,13 +3,16 @@
 #include "ReversiState.h"
 
 
+/// <summary>
+/// A struct used to hold the state of the algorithm while it's being executed.
+/// Holds the max_depth value so the algorithm knows how far in the recursion it's in
+/// and the move_made as a return value for the mini_max function.
+/// </summary>
 struct Info {
-	int x_of_move = -1;
-	int y_of_move = -1;
+	Position move_made;
 	const int MAX_DEPTH;
-	const Board original;
 
-	Info(Board original, int maxDepth): original(original), MAX_DEPTH(maxDepth) {}
+	Info(int maxDepth);
 };
 
 /// <summary>
@@ -19,7 +22,7 @@ struct Info {
 /// <param name="start">The current state of the board</param>
 /// <param name="max_depth">The maximum search depth for the algorithm.</param>
 /// <returns>A new board with the best move marked.</returns>
-Position mini_max(PLAYER turn, const Board& start, int max_depth);
+Position mini_max(PLAYER turn, const Board start, int max_depth);
 
 /// <summary>
 /// The 'min' half of the alpha-beta pruning algorithm.
