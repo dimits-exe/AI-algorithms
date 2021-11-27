@@ -141,7 +141,7 @@ void Board::makeMove(PLAYER p, Position move) {
 
 	if (!pair_exists) {
 		gameBoard[move.Y()][move.X()] = prevValue;
-		throw logic_error("Invalid move Χ=" + std::to_string(move.X() + 1) + " Υ=" + std::to_string(move.Y() + 1) + " in board \n" + toString());
+		throw logic_error("Invalid move X=" + std::to_string(move.X() + 1) + " Y=" + std::to_string(move.Y() + 1) + " in board \n" + toString());
 	}
 	else {
 		lastMovePlayed = move;
@@ -188,7 +188,7 @@ int Board::getScore(PLAYER p) const {
 
 
 string Board::toString() const {
-	string str(" ");
+	string str("  ");
 
 	//build horizontal header
 	for (int i = 1; i <= DIMENSION; i++)
@@ -196,7 +196,7 @@ string Board::toString() const {
 	str += "\n";
 
 	for (int i = 0; i < DIMENSION; i++) {
-		str += to_string(i + 1);
+		str += to_string(i + 1) + " ";
 		for (int j = 0; j < DIMENSION; j++) {
 			str += static_cast<char>(gameBoard[i][j]); //append player character
 			str += " ";
