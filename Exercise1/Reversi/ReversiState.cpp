@@ -51,9 +51,9 @@ Position ReversiState::getLastMove() const {
 list<ReversiState> ReversiState::getChildren() const {
 	list<ReversiState> children;
 
-	for (Position move : board.getValidMoves(nextTurn(turn))) {
+	for (Position move : board.getValidMoves(turn)) {
 		Board newBoard(this->board);
-		newBoard.makeMove(nextTurn(turn), move);
+		newBoard.makeMove(turn, move);
 
 		ReversiState newState (nextTurn(turn), CPU_SYMBOL, newBoard);
 		newState.setFather(this);
@@ -61,5 +61,5 @@ list<ReversiState> ReversiState::getChildren() const {
 		children.push_back(newState);
 	}
 
-	return children; //probably the only bottleneck in this program because of the copying h
+	return children; //probably the only bottleneck in this program because of the copying here
 }
