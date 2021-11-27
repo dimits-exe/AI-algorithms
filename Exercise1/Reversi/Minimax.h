@@ -2,7 +2,6 @@
 #include <unordered_set>
 #include "ReversiState.h"
 
-
 /// <summary>
 /// A struct used to hold the state of the algorithm while it's being executed.
 /// Holds the max_depth value so the algorithm knows how far in the recursion it's in
@@ -10,9 +9,10 @@
 /// </summary>
 struct Info {
 	Position move_made;
+	int best_value;
 	const int MAX_DEPTH;
 
-	Info(int maxDepth);
+	Info(int max_depth);
 };
 
 /// <summary>
@@ -27,6 +27,7 @@ Position mini_max(PLAYER turn, const Board start, int max_depth);
 /// <summary>
 /// The 'min' half of the alpha-beta pruning algorithm.
 /// </summary>
+/// <param name="context">An object holding the state of the algorithm.</param>
 /// <param name="closed_set">A set holding all the already computed states.</param>
 /// <param name="state">The state to be expanded and examined.</param>
 /// <param name="a">The parameter of the node's max value</param>
@@ -39,6 +40,7 @@ static int min_value(Info& context, std::unordered_set <ReversiState, ReversiSta
 /// <summary>
 /// The 'max' half of the alpha-beta pruning algorithm.
 /// </summary>
+/// <param name="context">An object holding the state of the algorithm.</param>
 /// <param name="closed_set">A set holding all the already computed states.</param>
 /// <param name="state">The state to be expanded and examined.</param>
 /// <param name="a">The parameter of the node's max value</param>
@@ -47,3 +49,12 @@ static int min_value(Info& context, std::unordered_set <ReversiState, ReversiSta
 /// <returns>The state with the current best outcome for the computer.</returns>
 static int max_value(Info& context, std::unordered_set <ReversiState, ReversiState::HashFunction>& closed_set,
 	const ReversiState& state, int a, int b, int TTL);
+
+/// <summary>
+/// Stores the move if it's better than the currently best one in the Info object.
+/// </summary>
+/// <param name="context">An object holding the state of the algorithm.</param>
+/// <param name="AI_move">The attempted move by the AI.</param>
+/// <param name="move_value">The value of the board after the supplied move.</param>
+/// <param name="curr_depth">The current depth of the DFS search.</param>
+static void store_move_if_best(Info& context, Position& AI_move, int move_value, int curr_depth);
