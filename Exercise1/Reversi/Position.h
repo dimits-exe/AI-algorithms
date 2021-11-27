@@ -1,12 +1,13 @@
 #pragma once
 #include <stdexcept>
 #include <limits>
+#include <iostream>
 
-/*
-An immutable x-y value pair referencing a square in the board.
-Supports tagging a position as 'invalid', as a return value.
-*/
-struct Position {
+/// <summary>
+/// An immutable x-y value pair referencing a square in the board.
+/// Supports tagging a position as 'invalid', to be used as a return value.
+/// </summary>
+class Position {
 
 public:
 
@@ -21,6 +22,10 @@ public:
 	Position(int x, int y) : x(x), y(y){}
 
 	Position(): x(INVALID_VALUE), y(INVALID_VALUE){}
+
+	friend std::ostream& operator<<(std::ostream& os, const Position& p) {
+		return os << " X=" << p.x << " Y=" << p.y;
+	}
 
 	int X() const {
 		if (x == INVALID_VALUE)
