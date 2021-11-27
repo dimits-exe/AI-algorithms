@@ -1,20 +1,18 @@
-#include <iostream>
 #include "Minimax.h"
+#include <iostream>
 
 #define INPUT_SYMBOL		"\n>"
-#define WELCOME_MSG			"Welcome to Reversi! This is a singleplayer game where you get against an AI"
-#define SELECT_DEPTH		"Please select the depth of the algorithm" INPUT_SYMBOL
-#define SELECT_TURN			"Do you want to play first? (y/n)" INPUT_SYMBOL
-#define MAKE_MOVE			"Play the next move (Give x-y coordinates)." INPUT_SYMBOL
-#define WRONG_MOVE			"This move is invalid."
-#define MAX_VALID_DEPTH		10
+#define WELCOME_MSG		"Welcome to Reversi! This is a singleplayer game where you get to play against an AI."
+#define SELECT_DEPTH		"Please select the depth of the algorithm (1-7)" INPUT_SYMBOL
+#define SELECT_TURN		"Do you want to play first? (y/n)" INPUT_SYMBOL
+#define MAKE_MOVE		"Play the next move (X, then Y coordinates)." INPUT_SYMBOL
+#define WRONG_MOVE		"This move is invalid."
+#define MAX_VALID_DEPTH		7
 
 using namespace std;
 
 void makePlayerMove(PLAYER turn, Board& currentBoard);
 
-// #define Game
-#ifdef Game
 int main(void) {
 	std::cout << WELCOME_MSG << endl;
 
@@ -22,7 +20,7 @@ int main(void) {
 	do {
 		std::cout << SELECT_DEPTH;
 		cin >> depth;
-	} while (depth <0 && depth > MAX_VALID_DEPTH);
+	} while (depth <= 0 && depth > MAX_VALID_DEPTH);
 
 	string answer;
 	do {
@@ -36,7 +34,7 @@ int main(void) {
 	else
 		CPU = PLAYER::PLAYER1;
 
-	//initialize variables
+	//initialize game variables
 	PLAYER turn = PLAYER::PLAYER1;
 	Board gameBoard(8);
 
@@ -49,16 +47,14 @@ int main(void) {
 
 		if (turn == CPU) {
 			cout << "Calculating next move..." << endl;
+
 			Position move = mini_max(turn, gameBoard, depth);
-			if (Position::is_invalid(move))
+			if (Position::is_invalid(move)) {
 				std::cout << "No possible moves for the computer." << endl;
+			}
 			else {
-				try {
-					gameBoard.makeMove(turn, move);
-				}
-				catch (logic_error e) {
-					std::cout << e.what() << endl;
-				}
+				gameBoard.makeMove(turn, move);
+				cout << "The Computer played Y=" << move.X()+1 << " X=" << move.Y()+1 << endl;
 			}
 				
 		}	
@@ -66,7 +62,7 @@ int main(void) {
 			makePlayerMove(turn, gameBoard);
 		}
 			
-
+		cout << " Current Board: \n" << gameBoard.toString() << endl;
 		turn = nextTurn(turn);
 	}
 
@@ -75,7 +71,6 @@ int main(void) {
 
 	return 0;
 }
-#endif
 
 void makePlayerMove(PLAYER turn, Board& currentBoard) {
 	int x, y;
@@ -86,12 +81,11 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 		return;
 	}
 
-	std::cout << currentBoard.toString();
 	do {
 		std::cout << MAKE_MOVE;
-		cin >> y >> x;
-		std::cout << "The player played " << y << '-' << x << endl;
-		x--; y--; //convert to 1-8 range
+		cin >> x >> y;
+		std::cout << "The player played " << x << '-' << y << endl;
+		x--; y--; //convert to 0-7 range
 
 		if (x <= 0 || x > 8 || y <= 0 || y > 8) {
 			std::cout << WRONG_MOVE << endl;
@@ -101,7 +95,6 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 			try {
 				currentBoard.makeMove(turn, Position(x, y));
 				succeded = true;
-				cout << currentBoard.toString() << endl;
 			}
 			catch (logic_error e) {
 				std::cout << e.what() << endl;
