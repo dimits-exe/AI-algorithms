@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Board.h"
 #include <memory>
 #include <list>
@@ -10,13 +9,20 @@
 class ReversiState {
 
 public:
-	ReversiState(PLAYER p, PLAYER CPU_SYMBOL, const Board& board);
 
-	ReversiState(const ReversiState&);
+	//No "father" pointer needed as the search is implemented in the stack
+
+	/// <summary>
+	/// Create a new initial state.
+	/// </summary>
+	/// <param name="p">The board's next turn.</param>
+	/// <param name="CPU_SYMBOL">The CPU's turn symbol.</param>
+	/// <param name="board">The board to be described by the state.</param>
+	ReversiState(PLAYER p, PLAYER CPU_SYMBOL, const Board& board);
 
 	bool operator==(const ReversiState& other) const;
 
-	struct HashFunction { //used for hash function
+	struct HashFunction { //used for set comparisons
 		size_t operator()(const ReversiState& state) const;
 	};
 
@@ -26,19 +32,26 @@ public:
 	/// <returns>A list with all possible future states.</returns>
 	std::list<ReversiState> getChildren() const;
 
-	double hashCode() const;
-
 	/// <summary>
 	/// Whether or not the state can be mutated further.
 	/// </summary>
 	/// <returns>
 	/// True if there are no other possible states, 
-	/// false otherwise
+	/// false otherwise.
 	/// </returns>
 	bool isFinal() const;
 
+	/// <summary>
+	/// Get heuristic estimate of the computer's advantage over
+	/// the player.
+	/// </summary>
+	/// <returns>The state's estimated value.</returns>
 	int getValue() const;
 
+	/// <summary>
+	/// Get the move that created this state.
+	/// </summary>
+	/// <returns>The square in which the last move was played.</returns>
 	Position getLastMove() const;
 	
 	/// <summary>
@@ -47,19 +60,16 @@ public:
 	/// <returns>A copy of the described board.</returns>
 	Board getBoard() const;
 
-	void setFather(const ReversiState* father);
-
-	const PLAYER turn;
-
 private:
-	//use this and this only for computing the value
+	//Use this and this only for computing the value.
 	const PLAYER CPU_SYMBOL;
 
-	//hold a pointer to a stack allocated variable,
-	//no memory management needed for changing the pointer
-	const ReversiState* father = nullptr; 
+	//The current turn.
+	const PLAYER turn;
 
+	//The board described by the state.
 	const Board board;
 
+	double hashcode() const;
 };
 
