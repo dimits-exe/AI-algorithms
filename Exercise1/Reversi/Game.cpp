@@ -8,23 +8,25 @@
 #define MAKE_MOVE			"Play the next move (X, then Y coordinates)." INPUT_SYMBOL
 #define WRONG_MOVE			"This move is invalid."
 #define MAX_VALID_DEPTH		10
+#define BOARD_SIZE			8
 
 using namespace std;
 
 void makePlayerMove(PLAYER turn, Board& currentBoard);
 
 int main(void) {
-	std::cout << WELCOME_MSG << endl;
+	cout << WELCOME_MSG << endl;
 
+	//initialize program parameters
 	int depth = -1;
 	do {
-		std::cout << SELECT_DEPTH;
+		cout << SELECT_DEPTH;
 		cin >> depth;
 	} while (depth <= 0 || depth > MAX_VALID_DEPTH);
 
 	string answer;
 	do {
-		std::cout << SELECT_TURN;
+		cout << SELECT_TURN;
 		cin >> answer;
 	} while (answer != "y" && answer != "n" && answer != "Y" && answer != "N");
 
@@ -36,22 +38,21 @@ int main(void) {
 
 	//initialize game variables
 	PLAYER turn = PLAYER::PLAYER1;
-	Board gameBoard(8);
+	Board gameBoard(BOARD_SIZE);
 
-	std::cout << "CPU symbol: " << static_cast<char>(CPU) << endl;
-	std::cout << "Player symbol: " << static_cast<char>(nextTurn(CPU)) << endl;
+	cout << "CPU symbol: " << static_cast<char>(CPU) << endl;
+	cout << "Player symbol: " << static_cast<char>(nextTurn(CPU)) << endl;
 
 	//main game loop
 	while (gameBoard.getValidMoves(PLAYER::PLAYER1).size() != 0 &&
 		gameBoard.getValidMoves(PLAYER::PLAYER2).size() != 0) { 
-		cout << " Current Board: \n" << gameBoard.toString() << endl;
 
 		if (turn == CPU) {
 			cout << "Calculating next move..." << endl;
 
 			Position move = mini_max(turn, gameBoard, depth);
-			if (Position::is_invalid(move)) {
-				std::cout << "No possible moves for the computer." << endl;
+			if (move.isInvalid()) {
+				cout << "No possible moves for the computer." << endl;
 			}
 			else {
 				gameBoard.makeMove(turn, move);
@@ -66,8 +67,8 @@ int main(void) {
 		turn = nextTurn(turn);
 	}
 
-	std::cout << "Player "<< static_cast<char>(turn) << " won!" << endl;
-	std::cout << gameBoard.toString() << endl;
+	cout << "Player "<< static_cast<char>(turn) << " won!" << endl;
+	cout << gameBoard.toString() << endl;
 
 	return 0;
 }
@@ -82,24 +83,19 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 	}
 
 	do {
-		std::cout << MAKE_MOVE;
+		cout << " Current Board: \n" << currentBoard.toString() << endl;
+		cout << MAKE_MOVE;
 		cin >> x >> y;
-		std::cout << "The player played " << Position(x, y) << endl;
+		cout << "The player played " << Position(x, y) << endl;
 		x--; y--; //convert to 0-7 range
 
-		if (x < 0 || x > 7 || y < 0 || y > 7) {
-			std::cout << WRONG_MOVE << endl;
+		if (currentBoard.isValidMove(turn, Position(x,y))) {
+			cout << WRONG_MOVE << endl;
 			succeded = false;
 		}
 		else {
-			try {
-				currentBoard.makeMove(turn, Position(x, y));
-				succeded = true;
-			}
-			catch (logic_error e) {
-				std::cout << e.what() << endl;
-				succeded = false;
-			}
+			currentBoard.makeMove(turn, Position(x, y));
+			succeded = true;
 		}
 
 	} while (!succeded);
