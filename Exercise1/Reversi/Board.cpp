@@ -20,16 +20,6 @@ Board::Board(int size) : DIMENSION(size) {
 	gameBoard[middleSquare.X()][middleSquare.Y() + 1] = PLAYER::PLAYER2;
 }
 
-Board::Board(const Board& oldBoard) {
-	*this = oldBoard;
-}
-
-void Board::operator=(const Board& other) {
-	this->DIMENSION = other.DIMENSION;
-	this->gameBoard = other.gameBoard;
-	this->lastMovePlayed = other.lastMovePlayed;
-}
-
 Position Board::getLastMove() const {
 	return lastMovePlayed;
 }
@@ -50,7 +40,7 @@ list<Position> Board::getValidMoves(PLAYER p) const {
 	}
 
 	//copy the whole list and return it
-	//valid moves should be few enough to make returning by value efficient
+	//valid moves should be few enough to make returning by value somewhat efficient
 	return ls;
 }
 
@@ -141,7 +131,8 @@ void Board::makeMove(PLAYER p, Position move) {
 
 	if (!pair_exists) {
 		gameBoard[move.Y()][move.X()] = prevValue;
-		throw logic_error("Invalid move X=" + std::to_string(move.X() + 1) + " Y=" + std::to_string(move.Y() + 1) + " in board \n" + toString());
+		//remove this after testing
+		throw logic_error("Invalid move X=" + std::to_string(move.X()) + " Y=" + std::to_string(move.Y()) + " in board \n" + toString());
 	}
 	else {
 		lastMovePlayed = move;
