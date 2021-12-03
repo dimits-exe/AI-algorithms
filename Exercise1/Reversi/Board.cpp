@@ -132,7 +132,7 @@ void Board::makeMove(PLAYER p, Position move) {
 	if (!pair_exists) {
 		gameBoard[move.Y()][move.X()] = prevValue;
 		//remove this after testing
-		throw logic_error("Invalid move X=" + std::to_string(move.X()) + " Y=" + std::to_string(move.Y()) + " in board \n" + toString());
+		throw logic_error("Invalid move X=" + std::to_string(move.X()+1) + " Y=" + std::to_string(move.Y()+1) + " in board \n" + toString());
 	}
 	else {
 		lastMovePlayed = move;
