@@ -51,36 +51,6 @@ State *StateSearcher::HillClimbing(State *initial_state)
 	return largest_overall;
 }
 
-State* StateSearcher::HCSideSteps(State* initial_state, int side_steps)
-{
-	// lmao doesn't work
-	State *current = initial_state;
-	std::cout << side_steps << std::endl;
-
-	bool exists_larger = true;
-	while (exists_larger) {
-
-		std::list<State*> neighbours;
-
-		exists_larger = false;
-		State *largest = current;
-
-		for (auto iter = current->begin(), end = current->end(); iter != end; iter++) {
-			if ((*iter)->getScore() > largest->getScore()) {
-				delete largest;
-				largest = *iter;
-				exists_larger = true;
-			}
-			else {
-				delete *iter;
-			}
-		}
-		current = largest;
-	}
-
-	return current;
-}
-
 State* StateSearcher::HCFirstChoice(State *initial_state)
 {
 	cout << "starting HCFC" << endl;
