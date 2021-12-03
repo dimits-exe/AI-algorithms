@@ -18,7 +18,7 @@ State* State::random(int dimension)
 }
 
 State::State(int dimension) : data(new bool[dimension * dimension]), dimension(dimension),
-	score(SCORE_NOT_EVALUATED), father(nullptr), max_score(dimension * (dimension - 1) / 2) 
+	score(SCORE_NOT_EVALUATED), max_score(dimension * (dimension - 1) / 2) 
 {
 	// clear the data
 	memset(this->data, false, this->dimension * this->dimension);
@@ -31,8 +31,7 @@ State::State(int dimension, bool* data) : State(dimension)
 }
 
 State::State(const State& other) : data(new bool[other.dimension * other.dimension]),
-	dimension(other.dimension), score(other.score), father(other.father),
-	max_score((other.dimension* (other.dimension - 1) / 2) - score)
+	dimension(other.dimension), score(other.score), max_score((other.dimension* (other.dimension - 1) / 2) - score)
 {
 	// copy the data from the other State
 	memcpy(this->data, other.data, this->dimension * this->dimension);
