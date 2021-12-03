@@ -43,7 +43,7 @@ State::~State()
 	delete[] data;
 }
 
-void State::print()
+void State::print() const
 {
 	int dim = this->dimension;
 
@@ -56,7 +56,7 @@ void State::print()
 	}
 }
 
-list<State*>* State::get_children()
+list<State*>* State::get_children() const
 {
 	int dim = this->dimension;
 
@@ -72,7 +72,6 @@ list<State*>* State::get_children()
 
 			State *child = new State(*this);
 			child->evaluate();
-			child->father = this;
 			children->push_back(child);
 
 			set(row, col, false);
@@ -82,11 +81,6 @@ list<State*>* State::get_children()
 	}
 
 	return children;
-}
-
-State* State::get_father()
-{
-	return father;
 }
 
 bool State::isFinal()
@@ -139,17 +133,17 @@ void State::evaluate()
 	}
 }
 
-ChildrenIterator State::begin()
+ChildrenIterator State::begin() const
 {
 	return ChildrenIterator(*this);
 }
 
-ChildrenIterator State::end()
+ChildrenIterator State::end() const
 {
 	int dim = this->dimension;
 	ChildrenIterator iter = ChildrenIterator(*this);
 
-	// dim*dim squares - dim queens
+	// dim*dim total squares - dim queens on the board
 	for (int i = 0, count = (dim * dim) - dim; i < count; i++)
 		iter.operator++();
 	
@@ -179,7 +173,7 @@ ChildrenIterator& ChildrenIterator::operator++()
 			// if row is outside of board limits
 			if (cx == original_state.dimension) {
 				// mark position invalid and break
-				cx = cy = -1;
+				cx = cy = ChildrenIterator::INVALID_POSITION;
 				break;
 			}
 
@@ -195,24 +189,28 @@ ChildrenIterator& ChildrenIterator::operator++()
 
 ChildrenIterator ChildrenIterator::operator++(int)
 {
-	generated_state = nullptr;
 	ChildrenIterator temp(*this);
 	operator++();
 	return temp;
 }
 
-bool ChildrenIterator::operator==(const ChildrenIterator& rhs)
+bool ChildrenIterator::operator==(const ChildrenIterator& rhs) const
 {
+	// same state and position
 	return original_state == rhs.original_state && cx == rhs.cx && cy == rhs.cy;
 }
 
-bool ChildrenIterator::operator!=(const ChildrenIterator& rhs)
+bool ChildrenIterator::operator!=(const ChildrenIterator& rhs) const
 {
-	return !this->operator==(rhs);
+	return !(this->operator==(rhs));
 }
 
 State* ChildrenIterator::operator*()
 {
+	// don't return anything when dereferencing end iterator
+	if (cx == cy == ChildrenIterator::INVALID_POSITION)
+		return nullptr;
+
 	// return cached State
 	if (generated_state != nullptr)
 		return generated_state;

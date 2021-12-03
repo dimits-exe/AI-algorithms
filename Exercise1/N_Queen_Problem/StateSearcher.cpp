@@ -5,19 +5,17 @@ using namespace std;
 
 State *StateSearcher::HillClimbing(State *initial_state)
 {
-	cout << "starting HC" << endl;
-
 	// the parent state of this generation that has the overall biggest score so far
 	State *largest_overall = new State(*initial_state);
 
 	bool exists_larger = true;
-	while (exists_larger) {
-
+	while (exists_larger)
+	{
 		State* largest_child = nullptr;
 
 		// find largest_child
-		for (auto iter = largest_overall->begin(), end = largest_overall->end(); iter != end; iter++) {
-
+		for (auto iter = largest_overall->begin(), end = largest_overall->end(); iter != end; iter++)
+		{
 			State* generated_child = *iter;
 			// initialise largest_child with the first generated child
 			if (largest_child == nullptr)
@@ -53,14 +51,12 @@ State *StateSearcher::HillClimbing(State *initial_state)
 
 State* StateSearcher::HCFirstChoice(State *initial_state)
 {
-	cout << "starting HCFC" << endl;
-
 	// the parent state of this generation that has the overall biggest score so far
 	State *largest_overall = new State(*initial_state);
 
 	bool exists_larger = true;
-	while (exists_larger) {
-
+	while (exists_larger)
+	{
 		exists_larger = false;
 
 		for (auto iter = largest_overall->begin(), end = largest_overall->end(); iter != end; iter++)
@@ -86,8 +82,6 @@ State* StateSearcher::HCFirstChoice(State *initial_state)
 
 State* StateSearcher::HCRandomRestarts(int dimension, int retries)
 {
-	cout << "starting HCRR" << endl;
-
 	// the state that has the current highest score among all reruns of HillClimbing
 	State* largest_overall = StateSearcher::HillClimbing(State::random(dimension));
 
@@ -113,8 +107,6 @@ State* StateSearcher::HCRandomRestarts(int dimension, int retries)
 
 State* StateSearcher::HCStochastic(State *initial_state)
 {
-	cout << "starting HCSt" << endl;
-
 	// the parent state of this generation that has the overall biggest score so far
 	State* largest_overall = new State(*initial_state);
 
@@ -171,6 +163,7 @@ State* StateSearcher::HCStochastic(State *initial_state)
 			for (State* bigger_child : bigger_children)
 				if (bigger_child != largest_overall)
 					delete bigger_child;
+
 			bigger_children.clear();
 		}
 	}

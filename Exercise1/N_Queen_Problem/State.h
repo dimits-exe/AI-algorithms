@@ -7,9 +7,15 @@
 
 class ChildrenIterator;
 
+/// <summary>
+/// A State of the N Queen Problem
+/// </summary>
 class State
 {
 public:
+	/// <summary>
+	/// Returns a state with a random queen configuration with a given dimension
+	/// </summary>
 	static State* random(int dimension);
 
 	State(int dimension);
@@ -18,20 +24,22 @@ public:
 
 	~State();
 
-	void print();
+	void print() const;
 
-	std::list<State*>* get_children();
-
-	State* get_father();
+	std::list<State*>* get_children() const;
 
 	bool isFinal();
 
+	/// <summary>
+	/// Returns a score that determines how good this state is. A bigger score indicates a better state.
+	/// </summary>
+	/// <returns>The number of pairs of queens that are not attacked</returns>
 	int getScore();
 
 	bool operator==(const State& other) const;
 
-	ChildrenIterator begin();
-	ChildrenIterator end();
+	ChildrenIterator begin() const;
+	ChildrenIterator end() const;
 
 	friend ChildrenIterator;
 
@@ -42,8 +50,9 @@ private:
 	const int dimension, max_score;
 	int score;
 
-	State *father;
-
+	/// <summary>
+	/// Sets this state's score equal to the number of pairs of queens that are attacked
+	/// </summary>
 	void evaluate();
 
 	inline bool get(int row, int col) const
@@ -62,13 +71,16 @@ private:
 
 		for (; this->get(row, queen_col) == false; queen_col++) {
 			if (queen_col == this->dimension)
-				printf("no queen at row: %d\n", row);
+				std::cout << "No Queen at row: " << row << std::endl;
 		}
 
 		return queen_col;
 	}
 };
 
+/// <summary>
+/// An iterator over the children of a State
+/// </summary>
 class ChildrenIterator : public std::iterator<std::input_iterator_tag, State*>
 {
 
@@ -78,15 +90,13 @@ public:
 
 	ChildrenIterator& operator++();
 	ChildrenIterator operator++(int);
-	bool operator==(const ChildrenIterator& rhs);
-	bool operator!=(const ChildrenIterator& rhs);
+	bool operator==(const ChildrenIterator& rhs) const;
+	bool operator!=(const ChildrenIterator& rhs) const;
 	State* operator*();
 
-	inline void print() {
-		printf("%d, %d\n", cx, cy);
-	}
-
 private:
+	static const int INVALID_POSITION = -1;
+
 	const State& original_state;
 	State* generated_state;
 	int cx, cy, qy;
