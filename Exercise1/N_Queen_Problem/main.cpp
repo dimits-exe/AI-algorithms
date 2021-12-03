@@ -60,21 +60,22 @@ int main(int argc, char** argv) {
 
 	// declare `results` function for printing results and cleanup
 	auto results = [](string name, State* s) {
-		cout << name << ": " << s->getScore() << " max: " << s->max_score << endl;
+		cout << name << " Score=" << s->getScore() << ". There are "
+			<< s->max_score - s->getScore() << " pairs of queens that attack each other." << endl;
 		s->print();
 		delete s;
 	};
 
 	// print results according to commandline args
-	results("Starting state", start);
+	results("Starting state:", start);
 	if (hc)
-		results("HC", hc_state);
+		results("HC:  ", hc_state);
 	if (fc)
-		results("HCFC", fc_state);
+		results("HCFC:", fc_state);
 	if (rr)
-		results("HCRR", rr_state);
+		results("HCRR:", rr_state);
 	if (st)
-		results("HCSt", st_state);
+		results("HCSt:", st_state);
 
 	cout << endl;
 }
