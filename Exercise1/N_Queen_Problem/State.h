@@ -44,6 +44,7 @@ public:
 	friend ChildrenIterator;
 
 private:
+public:
 	static const int SCORE_NOT_EVALUATED = -1;
 
 	bool *data;

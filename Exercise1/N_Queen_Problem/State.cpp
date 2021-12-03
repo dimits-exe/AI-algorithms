@@ -135,11 +135,12 @@ ChildrenIterator State::begin() const
 
 ChildrenIterator State::end() const
 {
-	int size = this->size;
 	ChildrenIterator iter = ChildrenIterator(*this);
 
 	// size*size total squares - size queens on the board
-	for (int i = 0, count = (size * size) - size; i < count; i++)
+	const int number_of_children = (this->size * this->size) - this->size;
+
+	for (int i = 0; i < number_of_children; i++)
 		iter.operator++();
 	
 	return iter;
@@ -203,7 +204,7 @@ bool ChildrenIterator::operator!=(const ChildrenIterator& rhs) const
 State* ChildrenIterator::operator*()
 {
 	// don't return anything when dereferencing end iterator
-	if (cx == cy == ChildrenIterator::INVALID_POSITION)
+	if ((cx == ChildrenIterator::INVALID_POSITION) && (cy == ChildrenIterator::INVALID_POSITION))
 		return nullptr;
 
 	// return cached State
