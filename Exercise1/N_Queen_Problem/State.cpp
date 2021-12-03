@@ -1,40 +1,42 @@
 #include "State.h"
+
+#include <cstring>
 #include <time.h>
 #include <math.h>
 
 using namespace std;
 
-State* State::random(int dimension)
+State* State::random(int size)
 {
 	// assumes srand has been called
-	State* state = new State(dimension);
-	for (int row = 0; row < state->dimension; row++) {
+	State* state = new State(size);
+	for (int row = 0; row < state->size; row++) {
 		// assumes one queen per row
-		int col = rand() % state->dimension;
+		int col = rand() % state->size;
 		state->set(row, col, true);
 	}
 
 	return state;
 }
 
-State::State(int dimension) : data(new bool[dimension * dimension]), dimension(dimension),
-	score(SCORE_NOT_EVALUATED), max_score(dimension * (dimension - 1) / 2) 
+State::State(int size) : data(new bool[size * size]), size(size),
+	score(SCORE_NOT_EVALUATED), max_score(size * (size - 1) / 2) 
 {
 	// clear the data
-	memset(this->data, false, this->dimension * this->dimension);
+	memset(this->data, false, this->size * this->size);
 }
 
-State::State(int dimension, bool* data) : State(dimension)
+State::State(int size, bool* data) : State(size)
 {
 	// copy the data from the pointer
-	memcpy(this->data, data, this->dimension * this->dimension);
+	memcpy(this->data, data, this->size * this->size);
 }
 
-State::State(const State& other) : data(new bool[other.dimension * other.dimension]),
-	dimension(other.dimension), score(other.score), max_score((other.dimension* (other.dimension - 1) / 2) - score)
+State::State(const State& other) : data(new bool[other.size * other.size]),
+	size(other.size), score(other.score), max_score((other.size* (other.size - 1) / 2) - score)
 {
 	// copy the data from the other State
-	memcpy(this->data, other.data, this->dimension * this->dimension);
+	memcpy(this->data, other.data, this->size * this->size);
 }
 
 State::~State()
@@ -44,11 +46,10 @@ State::~State()
 
 void State::print() const
 {
-	int dim = this->dimension;
 
 	// print 1 if there is a queen, 0 if there isn't
-	for (int row = 0; row < dim; row++) {
-		for (int col = 0; col < dim; col++)
+	for (int row = 0; row < this->size; row++) {
+		for (int col = 0; col < this->size; col++)
 			cout << this->get(row, col) ? "1" : "0";
 
 		cout << endl;
@@ -57,16 +58,14 @@ void State::print() const
 
 list<State*>* State::get_children() const
 {
-	int dim = this->dimension;
-
 	list<State*>* children = new list<State*>();
-	for (int row = 0; row < dim; row++) {
+	for (int row = 0; row < this->size; row++) {
 
 		int queen_col = findQ(row);
 
 		set(row, queen_col, false);
 
-		for (int col = 0; col < dim; col++) {
+		for (int col = 0; col < this->size; col++) {
 			set(row, col, true);
 
 			State *child = new State(*this);
@@ -99,10 +98,10 @@ int State::getScore()
 
 bool State::operator==(const State& other) const
 {
-	if (this->dimension != other.dimension)
+	if (this->size != other.size)
 		return false;
 
-	for (int i = 0, len = this->dimension * this->dimension; i < len; i++)
+	for (int i = 0, len = this->size * this->size; i < len; i++)
 		if (this->data[i] != other.data[i])
 			return false;
 
@@ -111,17 +110,14 @@ bool State::operator==(const State& other) const
 
 void State::evaluate()
 {
-	int dim = this->dimension;
-	
-	this->score = 0;
-
+	this->score = 0; 
 	// find the queen on each row
-	for (int row = 0; row < dim; row++)
+	for (int row = 0; row < this->size; row++)
 	{
 		int qx = row, qy = findQ(qx);
 
 		// find the queen on each of the remaining rows
-		for (int remaining_row = row + 1; remaining_row < dim; remaining_row++)
+		for (int remaining_row = row + 1; remaining_row < this->size; remaining_row++)
 		{
 			int cx = remaining_row, cy = findQ(cx);
 
@@ -139,11 +135,11 @@ ChildrenIterator State::begin() const
 
 ChildrenIterator State::end() const
 {
-	int dim = this->dimension;
+	int size = this->size;
 	ChildrenIterator iter = ChildrenIterator(*this);
 
-	// dim*dim total squares - dim queens on the board
-	for (int i = 0, count = (dim * dim) - dim; i < count; i++)
+	// size*size total squares - size queens on the board
+	for (int i = 0, count = (size * size) - size; i < count; i++)
 		iter.operator++();
 	
 	return iter;
@@ -164,13 +160,13 @@ ChildrenIterator& ChildrenIterator::operator++()
 		cy++;
 
 		// if column is outside of board limits
-		if (cy >= original_state.dimension) {
+		if (cy >= original_state.size) {
 
 			// advance row
 			cx++;
 			
 			// if row is outside of board limits
-			if (cx == original_state.dimension) {
+			if (cx == original_state.size) {
 				// mark position invalid and break
 				cx = cy = ChildrenIterator::INVALID_POSITION;
 				break;

@@ -14,13 +14,13 @@ class State
 {
 public:
 	/// <summary>
-	/// Returns a state with a random queen configuration with a given dimension
+	/// Returns a state with a random queen configuration with a given size
 	/// </summary>
-	static State* random(int dimension);
+	static State* random(int size);
 
-	State(int dimension);
-	State(int dimension, bool* data);
-	State(const State& other);
+	State(int size);
+	State(int size, bool* data);
+	State(const State&);
 
 	~State();
 
@@ -36,7 +36,7 @@ public:
 	/// <returns>The number of pairs of queens that are not attacked</returns>
 	int getScore();
 
-	bool operator==(const State& other) const;
+	bool operator==(const State&) const;
 
 	ChildrenIterator begin() const;
 	ChildrenIterator end() const;
@@ -47,7 +47,7 @@ private:
 	static const int SCORE_NOT_EVALUATED = -1;
 
 	bool *data;
-	const int dimension, max_score;
+	const int size, max_score;
 	int score;
 
 	/// <summary>
@@ -57,12 +57,12 @@ private:
 
 	inline bool get(int row, int col) const
 	{
-		return this->data[row * this->dimension + col];
+		return this->data[row * this->size + col];
 	}
 
 	inline void set(int row, int col, bool value) const
 	{
-		this->data[row * this->dimension + col] = value;
+		this->data[row * this->size + col] = value;
 	}
 
 	inline int findQ(int row) const
@@ -70,7 +70,7 @@ private:
 		int queen_col = 0;
 
 		for (; this->get(row, queen_col) == false; queen_col++) {
-			if (queen_col == this->dimension)
+			if (queen_col == this->size)
 				std::cout << "No Queen at row: " << row << std::endl;
 		}
 
@@ -85,13 +85,13 @@ class ChildrenIterator : public std::iterator<std::input_iterator_tag, State*>
 {
 
 public:
-	ChildrenIterator(const State& state);
+	ChildrenIterator(const State&);
 	~ChildrenIterator();
 
 	ChildrenIterator& operator++();
 	ChildrenIterator operator++(int);
-	bool operator==(const ChildrenIterator& rhs) const;
-	bool operator!=(const ChildrenIterator& rhs) const;
+	bool operator==(const ChildrenIterator&) const;
+	bool operator!=(const ChildrenIterator&) const;
 	State* operator*();
 
 private:
