@@ -89,13 +89,20 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 		cout << "The player played " << Position(x, y) << endl;
 		x--; y--; //convert to 0-7 range
 
-		if (currentBoard.isValidMove(turn, Position(x,y))) {
-			cout << WRONG_MOVE << endl;
+		if (x <= 0 || x > BOARD_SIZE || y <= 0 || y > BOARD_SIZE) {
+			std::cout << WRONG_MOVE << endl;
 			succeded = false;
 		}
 		else {
-			currentBoard.makeMove(turn, Position(x, y));
-			succeded = true;
+			try {
+				currentBoard.makeMove(turn, Position(x, y));
+				succeded = true;
+				cout << currentBoard.toString() << endl;
+			}
+			catch (logic_error e) {
+				std::cout << e.what() << endl;
+				succeded = false;
+			}
 		}
 
 	} while (!succeded);
