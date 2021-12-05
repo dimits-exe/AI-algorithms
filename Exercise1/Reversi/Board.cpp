@@ -175,6 +175,8 @@ int Board::getScore(PLAYER p) const {
 		return pl1Count - pl2Count;
 	else if (p == PLAYER::PLAYER2)
 		return pl2Count - pl1Count;
+	
+	return 0; //never reached, exists just to appease the compiler
 }
 
 
