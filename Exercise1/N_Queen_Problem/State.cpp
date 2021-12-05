@@ -19,21 +19,21 @@ State* State::random(int size)
 	return state;
 }
 
-State::State(int size) : data(new bool[size * size]), size(size),
-	score(SCORE_NOT_EVALUATED), max_score(size * (size - 1) / 2) 
+State::State(int boardSize) : data(new bool[boardSize * boardSize]), size(boardSize),
+	max_score(boardSize * (boardSize - 1) / 2), score(SCORE_NOT_EVALUATED)
 {
 	// clear the data
 	memset(this->data, false, this->size * this->size);
 }
 
-State::State(int size, bool* data) : State(size)
+State::State(int boardSize, bool* stateData) : State(boardSize)
 {
 	// copy the data from the pointer
-	memcpy(this->data, data, this->size * this->size);
+	memcpy(this->data, stateData, this->size * this->size);
 }
 
 State::State(const State& other) : data(new bool[other.size * other.size]),
-	size(other.size), score(other.score), max_score((other.size* (other.size - 1) / 2) - score)
+	size(other.size), max_score((other.size * (other.size - 1) / 2)), score(other.score)
 {
 	// copy the data from the other State
 	memcpy(this->data, other.data, this->size * this->size);
