@@ -1,12 +1,13 @@
 #include "Minimax.h"
 #include <iostream>
 
-#define INPUT_SYMBOL		"\n>"
+#define INPUT_SYMBOL			"\n>"
 #define WELCOME_MSG			"Welcome to Reversi! This is a singleplayer game where you get to play against an AI."
-#define SELECT_DEPTH		"Please select the depth of the algorithm (1-10)" INPUT_SYMBOL
+#define SELECT_DEPTH			"Please select the depth of the algorithm (1-10)" INPUT_SYMBOL
 #define SELECT_TURN			"Do you want to play first? (y/n)" INPUT_SYMBOL
 #define MAKE_MOVE			"Play the next move (X, then Y coordinates)." INPUT_SYMBOL
-#define WRONG_MOVE			"This move is invalid."
+#define WRONG_MOVE			"This move is invalid. You need to capture at least 1 enemy in your move."
+
 #define MAX_VALID_DEPTH		10
 #define BOARD_SIZE			8
 
@@ -74,7 +75,7 @@ int main(void) {
 }
 
 void makePlayerMove(PLAYER turn, Board& currentBoard) {
-	int x, y;
+	long long x, y; //prevent undefined behavior from oveflow and comp optimization
 	bool succeded = true;
 
 	if (currentBoard.getValidMoves(turn).size() == 0) {
