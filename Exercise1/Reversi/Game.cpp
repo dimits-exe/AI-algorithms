@@ -1,15 +1,15 @@
 #include "Minimax.h"
 #include <iostream>
 
-#define INPUT_SYMBOL			"\n>"
-#define WELCOME_MSG			"Welcome to Reversi! This is a singleplayer game where you get to play against an AI."
-#define SELECT_DEPTH			"Please select the depth of the algorithm (1-10)" INPUT_SYMBOL
-#define SELECT_TURN			"Do you want to play first? (y/n)" INPUT_SYMBOL
-#define MAKE_MOVE			"Play the next move (X, then Y coordinates)." INPUT_SYMBOL
-#define WRONG_MOVE			"This move is invalid. You need to capture at least 1 enemy in your move."
-
-#define MAX_VALID_DEPTH		10
-#define BOARD_SIZE			8
+#define INPUT_SYMBOL		"\n>"
+#define WELCOME_MSG		"Welcome to Reversi! This is a singleplayer game where you get to play against an AI! \
+\nVisit https://en.wikipedia.org/wiki/Reversi for the rules of the game.\n"
+#define SELECT_DEPTH_PROMPT	"Please select the depth of the algorithm (1-9):" INPUT_SYMBOL
+#define SELECT_TURN_PROMPT	"Do you want to play first? (y/n)" INPUT_SYMBOL
+#define MAKE_MOVE_PROMPT(x)	"Select " x ":" INPUT_SYMBOL
+#define WRONG_MOVE		"This move is invalid."
+#define MAX_VALID_DEPTH		9
+#define BOARD_SIZE		8
 
 using namespace std;
 
@@ -21,13 +21,13 @@ int main(void) {
 	//initialize program parameters
 	int depth = -1;
 	do {
-		cout << SELECT_DEPTH;
+		cout << SELECT_DEPTH_PROMPT;
 		cin >> depth;
 	} while (depth <= 0 || depth > MAX_VALID_DEPTH);
 
 	string answer;
 	do {
-		cout << SELECT_TURN;
+		cout << SELECT_TURN_PROMPT;
 		cin >> answer;
 	} while (answer != "y" && answer != "n" && answer != "Y" && answer != "N");
 
@@ -75,7 +75,8 @@ int main(void) {
 }
 
 void makePlayerMove(PLAYER turn, Board& currentBoard) {
-	long long x, y; //prevent undefined behavior from oveflow and comp optimization
+	long long x, y; // try to prevent undefined behavior from oveflow and compiler optimization 
+			// (seems to work unless a value of trillions is given as input)
 	bool succeded = true;
 
 	if (currentBoard.getValidMoves(turn).size() == 0) {
@@ -85,8 +86,10 @@ void makePlayerMove(PLAYER turn, Board& currentBoard) {
 
 	do {
 		cout << " Current Board: \n" << currentBoard.toString() << endl;
-		cout << MAKE_MOVE;
-		cin >> x >> y;
+		cout << MAKE_MOVE_PROMPT("row");
+		cin >> x;
+		cout << MAKE_MOVE_PROMPT("column");
+		cin >> y;
 		cout << "The player played " << Position(x, y) << endl;
 		x--; y--; //convert to 0-7 range
 
