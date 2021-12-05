@@ -5,3 +5,13 @@
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+# visual studio build directories
+Debug/
+
+# compilation output files
+*.exe
+
+# cygwin files
+*.stackdump
+
