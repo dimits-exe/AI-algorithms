@@ -6,6 +6,8 @@ from timed import timed
 
 
 class Category(Enum):
+    """ Represents a possible Category of an Example """
+
     NONE = auto()
     POS = auto()
     NEG = auto()
@@ -16,6 +18,14 @@ class Category(Enum):
 
 
 class Example:
+    """
+    Represents an Example of the data. It can either be a training or a testing Example.
+
+    The `actual` field indicates the actual Category of the Example while the `predicted`
+    one should be determined upon classification. The `attributes` field contains the
+    attributes of the Example, that is, the individual words in it.
+    """
+
     _ignored_chars = ['"', "'", '.', ',', '>', '<', '\\', '/', '-', '(', ')', ';', ':', '?']
     _regex = "[%s\\d]" % (re.escape("".join(_ignored_chars)))
     _ignored_chars_pattern = re.compile(_regex)
@@ -51,10 +61,24 @@ class Node:
 
     @staticmethod
     def internal(attribute: str) -> 'Node':
+        """
+        Returns an internal Node of an ID3 tree, responsible for an attribute.
+        The Node's Category is set to NONE.
+
+        :param attribute: the attribute that shall be checked in this Node
+        :return: the Node
+        """
         return Node(Category.NONE, attribute)
 
     @staticmethod
     def leaf(category: Category) -> 'Node':
+        """
+        Returns a leaf Node of an ID3 tree, responsible for a classification.
+        The Node's Attribute is set to "".
+
+        :param category: the Category with which Examples will be classified according to this Node
+        :return: the Node
+        """
         return Node(category, "")
 
 
