@@ -93,7 +93,7 @@ class ID3_Tree:
         :param examples: the examples on which to train the ID3 classifier
         :param attributes: the attributes that will be used to classify the examples
         """
-        self.root: Node = id3_recursive(examples, attributes, Category.NONE)
+        self.root: Node = ID3_Tree.id3_recursive(examples, attributes, Category.NONE)
 
     def classify(self, test_example: Example) -> Category:
         """
@@ -110,48 +110,48 @@ class ID3_Tree:
         test_example.predicted = curr.category
         return curr.category
 
+    @staticmethod
+    def id3_recursive(examples: set[Example], attributes: set[str], target_category: Category) -> Node:
+        """
+        Generates a tree that can classify an example.
 
-def id3_recursive(examples: set[Example], attributes: set[str], target_category: Category) -> Node:
-    """
-    Generates a tree that can classify an example.
+        :param examples: the set of examples from which the tree will be constructed
+        :param attributes: the attributes that will be used to classify the examples
+        :param target_category: the most common category among the examples
+        :return: a tree node that best classifies the examples with the given attributes
+        """
+        # if there are no examples, return target_category
+        if len(examples) == 0:
+            return Node.leaf(target_category)
 
-    :param examples: the set of examples from which the tree will be constructed
-    :param attributes: the attributes that will be used to classify the examples
-    :param target_category: the most common category among the examples
-    :return: a tree node that best classifies the examples with the given attributes
-    """
-    # if there are no examples, return target_category
-    if len(examples) == 0:
-        return Node.leaf(target_category)
+        # if all examples belong to a single category, return that category
+        for category in Category.values():
+            if all(e.actual == category for e in examples):
+                return Node.leaf(category)
 
-    # if all examples belong to a single category, return that category
-    for category in Category.values():
-        if all(e.actual == category for e in examples):
-            return Node.leaf(category)
+        # find most common category among all the examples
+        categories = dict.fromkeys(Category.values(), 0)
+        for example in examples:
+            categories[example.actual] += 1
+        most_common_category = max(categories.keys(), key=lambda k: categories[k])
 
-    # find most common category among all the examples
-    categories = dict.fromkeys(Category.values(), 0)
-    for example in examples:
-        categories[example.actual] += 1
-    most_common_category = max(categories.keys(), key=lambda k: categories[k])
+        # if there are no attributes left, return the most common category
+        if len(attributes) == 0:
+            return Node.leaf(most_common_category)
 
-    # if there are no attributes left, return the most common category
-    if len(attributes) == 0:
-        return Node.leaf(most_common_category)
+        # otherwise, create a tree by splitting the examples by whether
+        # they contain best_attr or not (values True or False)
+        best_attr = choose_best_attr(attributes, examples)
+        root = Node.internal(best_attr)
 
-    # otherwise, create a tree by splitting the examples by whether
-    # they contain best_attr or not (values True or False)
-    best_attr = choose_best_attr(attributes, examples)
-    root = Node.internal(best_attr)
+        for value in {True, False}:
+            examples_subset = {e for e in examples if (best_attr in e.attributes) == value}
+            new_attrs = set(attributes)
+            new_attrs.remove(best_attr)
+            subtree = ID3_Tree.id3_recursive(examples_subset, new_attrs, most_common_category)
+            root.children[value] = subtree
 
-    for value in {True, False}:
-        examples_subset = {e for e in examples if (best_attr in e.attributes) == value}
-        new_attrs = set(attributes)
-        new_attrs.remove(best_attr)
-        subtree = id3_recursive(examples_subset, new_attrs, most_common_category)
-        root.children[value] = subtree
-
-    return root
+        return root
 
 
 def choose_best_attr(attributes: set[str], examples: set[Example]) -> str:
