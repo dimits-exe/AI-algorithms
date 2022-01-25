@@ -85,7 +85,7 @@ class Node:
 class ID3_Tree:
     """ An ID3 Tree classifier used to classify an Example """
     
-    @timed(prompt="Run ID3")
+    @timed(prompt="Train ID3")
     def __init__(self, examples: set[Example], attributes: set[str]):
         """
         Creates a new ID3 classifier by training it on the provided training data.
@@ -94,6 +94,10 @@ class ID3_Tree:
         :param attributes: the attributes that will be used to classify the examples
         """
         self.root: Node = ID3_Tree.id3_recursive(examples, attributes, Category.NONE)
+
+    @staticmethod
+    def train(self, examples: set[Example], attributes: set[str]) -> 'ID3_Tree':
+        return ID3_Tree(examples, attributes)
 
     def classify(self, test_example: Example) -> Category:
         """

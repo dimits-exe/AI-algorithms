@@ -1,6 +1,6 @@
 import os
 
-from id3 import Example, Category
+from id3 import Example, Category, ID3_Tree
 from timed import timed
 
 
@@ -63,7 +63,7 @@ def main() -> None:
         print(f"Loading didn't complete normally due to: {err}")
         return
 
-    # node = id3(examples, attributes)
+    tree = ID3_Tree.train(examples, attributes)
 
 
 if __name__ == "__main__":
