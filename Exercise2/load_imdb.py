@@ -1,6 +1,7 @@
 import os
 
 from id3 import Example, Category, ID3_Tree
+from random_forest import RandomForest
 from timed import timed
 
 
@@ -64,6 +65,7 @@ def main() -> None:
         return
 
     tree = ID3_Tree.train(examples, attributes)
+    random_forest = RandomForest(examples, attributes, 10, 0.01)
 
 
 if __name__ == "__main__":
