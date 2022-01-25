@@ -6,5 +6,8 @@ AI-algorithms.sln
 *.vcxproj.filters
 *.vcxproj.user
 
+# PyCharm files
+*/.idea/
+
 resources/
 
