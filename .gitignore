@@ -1,0 +1,10 @@
+
+# Visual Studio files
+.vs/
+AI-algorithms.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+resources/
+
