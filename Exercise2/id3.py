@@ -42,31 +42,34 @@ class Node:
         self.children = dict()
         self.attribute = attribute
 
-
 class ID3_Tree:
-    """
-    A ID3 Decision Tree classifier.
-    """
+    """ An ID3 Tree classifier used to classify an Example """
     
     @timed(prompt="Run ID3")
     def __init__(self, examples: set[Example], attributes: set[str]):
         """
-        Creates a new ID3 classifier trained on the provided training data.
+        Creates a new ID3 classifier by training it on the provided training data.
+
+        :param examples: the examples on which to train the ID3 classifier
+        :param attributes: the attributes that will be used to classify the examples
         """
-        self.root = id3_recursive(examples, attributes, Category.NONE)
+        self.root: Node = id3_recursive(examples, attributes, Category.NONE)
 
     def classify(self, test_example: Example) -> Category:
         """
-        Classifies the provided example by traversing the internal tree
-        based on the example's words.
+        Classifies the provided Example by traversing the internal tree based on the
+        Example's attributes.The `predicted` Category of the test_example is also updated
 
-        Parameters:
-            test_example (Example): The example to be classified
-
-        Returns:
-            The estimated category of the example.
+        :param test_example: The example to be classified
+        :return: The predicted Category of the example.
         """
-        return Category.POS
+        curr: Node = self.root
+        while curr.category == Category.NONE:
+            curr = curr.children[curr.attribute in test_example.attributes]
+
+        test_example.predicted = curr.category
+        return curr.category
+
 
 def id3_recursive(examples: set[Example], attributes: set[str], target_category: Category) -> Node:
     """
