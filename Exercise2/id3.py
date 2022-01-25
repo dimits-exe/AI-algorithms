@@ -96,7 +96,7 @@ class ID3_Tree:
         self.root: Node = ID3_Tree.id3_recursive(examples, attributes, Category.NONE)
 
     @staticmethod
-    def train(self, examples: set[Example], attributes: set[str]) -> 'ID3_Tree':
+    def train(examples: set[Example], attributes: set[str]) -> 'ID3_Tree':
         return ID3_Tree(examples, attributes)
 
     def classify(self, test_example: Example) -> Category:
