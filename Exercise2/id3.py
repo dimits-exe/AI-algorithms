@@ -49,6 +49,14 @@ class Node:
         self.children: dict[bool, Node] = dict()
         self.attribute: str = attribute
 
+    @staticmethod
+    def internal(attribute: str) -> 'Node':
+        return Node(Category.NONE, attribute)
+
+    @staticmethod
+    def leaf(category: Category) -> 'Node':
+        return Node(category, "")
+
 
 class ID3_Tree:
     """ An ID3 Tree classifier used to classify an Example """
@@ -90,12 +98,12 @@ def id3_recursive(examples: set[Example], attributes: set[str], target_category:
     """
     # if there are no examples, return target_category
     if len(examples) == 0:
-        return Node(target_category, "")
+        return Node.leaf(target_category)
 
     # if all examples belong to a single category, return that category
     for category in Category.values():
         if all(e.actual == category for e in examples):
-            return Node(category, "")
+            return Node.leaf(category)
 
     # find most common category among all the examples
     categories = dict.fromkeys(Category.values(), 0)
@@ -105,12 +113,12 @@ def id3_recursive(examples: set[Example], attributes: set[str], target_category:
 
     # if there are no attributes left, return the most common category
     if len(attributes) == 0:
-        return Node(most_common_category, "")
+        return Node.leaf(most_common_category)
 
     # otherwise, create a tree by splitting the examples by whether
     # they contain best_attr or not (values True or False)
     best_attr = choose_best_attr(attributes, examples)
-    root = Node(Category.NONE, best_attr)
+    root = Node.internal(best_attr)
 
     for value in {True, False}:
         examples_subset = {e for e in examples if (best_attr in e.attributes) == value}
