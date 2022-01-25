@@ -11,7 +11,7 @@ class Category(Enum):
     NEG = auto()
 
     @classmethod
-    def values(cls):
+    def values(cls) -> set['Category']:
         return {cls.POS, cls.NEG}
 
 
@@ -21,12 +21,12 @@ class Example:
     _ignored_chars_pattern = re.compile(_regex)
 
     def __init__(self, category: Category, raw_text: str):
-        self.actual = category
-        self.predicted = Category.NONE
+        self.actual: Category = category
+        self.predicted: Category = Category.NONE
 
         sanitized_text = Example._ignored_chars_pattern.sub("", raw_text, 0)
         sanitized_text = re.sub("\\s+", " ", sanitized_text)
-        self.attributes = set(sanitized_text.split(" "))
+        self.attributes: set[str] = set(sanitized_text.split(" "))
 
     def __str__(self):
         return f"{self.actual.name}: {self.attributes}"
@@ -34,13 +34,21 @@ class Example:
 
 class Node:
     """
-    An internal data structure used to construct a ID3 tree.
+    An internal data structure used to construct an ID3 tree and later traverse it.
+
+    The `attribute` field indicates the attribute that is being tested at this Node and the
+    `children` dictionary contains references to the appropriate Nodes that should be traversed
+    based on the value of the `attribute` in an Example.
+
+    The `category` field is NONE iff this Node is internal in the tree. A non-NONE value indicates
+    that upon reaching this Node, the predicted Category of an Example will be that category.
     """
 
     def __init__(self, category: Category, attribute: str):
-        self.category = category
-        self.children = dict()
-        self.attribute = attribute
+        self.category: Category = category
+        self.children: dict[bool, Node] = dict()
+        self.attribute: str = attribute
+
 
 class ID3_Tree:
     """ An ID3 Tree classifier used to classify an Example """
