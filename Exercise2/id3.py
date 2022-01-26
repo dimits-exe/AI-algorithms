@@ -37,7 +37,16 @@ class Example:
         sanitized_text = Example._ignored_chars_pattern.sub("", raw_text, 0)
         sanitized_text = re.sub("\\s+", " ", sanitized_text)
         self.attributes: set[str] = set(sanitized_text.split(" "))
-
+            
+     def copy(self):
+        """
+        Create a new Example with the same attributes (shallow copy) and actual category
+        but with a blank predicted category.
+        """
+        ex = Example(self.actual, "")
+        ex.attributes = self.attributes
+        return ex
+    
     def __str__(self):
         return f"{self.actual.name}: {self.attributes}"
 
