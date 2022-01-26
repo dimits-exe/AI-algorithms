@@ -27,7 +27,8 @@ class RandomForest:
         self.trees: set[ID3_Tree] = set()
 
         for _ in range(tree_count):
-            examples_for_tree = random.choices(examples, k=example_count_per_tree)
+            # pass copies of the examples, so they properly hold their "predicted" value
+            examples_for_tree = {e.copy() for e in random.sample(examples, k=example_count_per_tree)}
             trained_tree = ID3_Tree.train(set(examples_for_tree), attributes)
             self.trees.add(trained_tree)
 
