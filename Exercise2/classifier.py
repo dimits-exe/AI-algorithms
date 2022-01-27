@@ -17,7 +17,6 @@ class Category(Enum):
 class Example:
     """
     Represents an Example of the data. It can either be a training or a testing Example.
-
     The `actual` field indicates the actual Category of the Example while the `predicted`
     one should be determined upon classification. The `attributes` field contains the
     attributes of the Example, that is, the individual words in it.
