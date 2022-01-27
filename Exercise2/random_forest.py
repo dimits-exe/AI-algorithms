@@ -30,7 +30,7 @@ class RandomForest(Classifier):
         for _ in range(tree_count):
             # pass copies of the examples, so they properly hold their "predicted" value
             examples_for_tree = {e.copy() for e in random.sample(examples, k=example_count_per_tree)}
-            trained_tree = ID3.train(set(examples_for_tree), attributes)
+            trained_tree = ID3(set(examples_for_tree), attributes)
             self.trees.add(trained_tree)
 
     def classify(self, example: Example) -> Category:
