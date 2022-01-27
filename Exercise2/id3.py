@@ -57,10 +57,6 @@ class ID3(Classifier):
         """
         self.root: Node = ID3.id3_recursive(examples, attributes, Category.NONE)
 
-    @staticmethod
-    def train(examples: set[Example], attributes: set[str]) -> 'ID3':
-        return ID3(examples, attributes)
-
     def classify(self, test_example: Example) -> Category:
         """
         Classifies the provided Example by traversing the internal tree based on the
