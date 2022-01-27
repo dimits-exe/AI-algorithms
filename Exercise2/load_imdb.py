@@ -1,7 +1,6 @@
 import os
 
-from id3 import Example, Category, ID3_Tree
-from random_forest import RandomForest
+from classifier import Example, Category
 from timed import timed
 
 
@@ -11,18 +10,18 @@ def load_examples(directory: str, sample_size=5000) -> set[Example]:
     pos_dir_path = os.path.join(directory, "pos")
 
     examples = set()
-    examples |= _load_examples(neg_dir_path, Category.POS, sample_size // 2)
-    examples |= _load_examples(pos_dir_path, Category.NEG, sample_size // 2)
+    examples |= _load_examples_of_category(neg_dir_path, Category.POS, sample_size // 2)
+    examples |= _load_examples_of_category(pos_dir_path, Category.NEG, sample_size // 2)
 
     return examples
 
 
-def _load_examples(directory: str, category: Category, sample_size: int) -> set[Example]:
+def _load_examples_of_category(directory: str, category: Category, sample_size: int) -> set[Example]:
     print(f"Loading {category.name} data")
     files = os.listdir(directory)
     sep = os.sep
     examples = set()
-    one_tenth_progress = min(len(files), sample_size) // 10
+    one_tenth_progress = min(len(files), sample_size) / 10
 
     for count, file in enumerate(files):
         if count == sample_size:
@@ -42,7 +41,8 @@ def _load_examples(directory: str, category: Category, sample_size: int) -> set[
 
 
 @timed(prompt="Extract Attributes")
-def get_attributes(examples: set[Example]) -> set[str]:
+def load_attributes(examples: set[Example]) -> set[str]:
+    # TODO replace load_attributes(filename: str) that reads the file with the attributes
     attributes = set()
     for example in examples:
         attributes |= example.attributes
@@ -50,7 +50,8 @@ def get_attributes(examples: set[Example]) -> set[str]:
     return attributes
 
 
-def main() -> None:
+@timed(prompt="Test Load")
+def test_load() -> None:
 
     # path_to_file = os.path.dirname(os.path.abspath(__file__))
     path_to_file = "C:\\Users\\alexm\\projects\\C++\\AI-algorithms\\resources"
@@ -58,15 +59,12 @@ def main() -> None:
 
     try:
         examples = load_examples(directory, 10000)
-        attributes = get_attributes(examples)
+        attributes = load_attributes(examples)
 
     except os.error as err:
         print(f"Loading didn't complete normally due to: {err}")
         return
 
-    tree = ID3_Tree.train(examples, attributes)
-    random_forest = RandomForest(examples, attributes, 10, 0.01)
-
 
 if __name__ == "__main__":
-    main()
+    test_load()
