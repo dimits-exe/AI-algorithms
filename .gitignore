@@ -8,6 +8,7 @@ AI-algorithms.sln
 
 # PyCharm files
 */.idea/
+*/__pycache__/
 
 resources/
 
