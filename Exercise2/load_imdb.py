@@ -21,7 +21,7 @@ def _load_examples_of_category(directory: str, category: Category, sample_size: 
     files = os.listdir(directory)
     sep = os.sep
     examples = set()
-    one_tenth_progress = min(len(files), sample_size) / 10
+    one_tenth_progress = min(len(files), sample_size) // 10
 
     for count, file in enumerate(files):
         if count == sample_size:
@@ -32,7 +32,7 @@ def _load_examples_of_category(directory: str, category: Category, sample_size: 
 
         examples.add(Example(category, contents))
 
-        if (count + 1) % one_tenth_progress == 0:  # `count` is 0-indexed
+        if one_tenth_progress != 0 and (count + 1) % one_tenth_progress == 0:  # `count` is 0-indexed
             print('\b' * 20 + "%d%% complete..." % ((count + 1) // one_tenth_progress * 10), end="")
 
     print()
