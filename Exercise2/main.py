@@ -2,13 +2,14 @@ from load_imdb import load_examples, get_attributes, Example
 from id3 import Category, ID3
 from random_forest import RandomForest
 from test_stats import TestStats
+from classifier import Classifier
 import sys
 
 
-def test_classifier(classifier: object, examples: set[Example]) -> TestStats:
+def test_classifier(classifier: Classifier, examples: set[Example]) -> TestStats:
     """
     Run a test on a given classifier for a given dataset.
-    :param classifier: any object that implements the `classify(set[Example])` method
+    :param classifier: any Classifier object
     :param examples: the examples to be tested
     :return: a TestStats object describing the results of the testing
     """
@@ -16,8 +17,10 @@ def test_classifier(classifier: object, examples: set[Example]) -> TestStats:
     false_positives = 0
     false_negatives = 0
     true_positives = 0
+
+    classifier.classify_bulk(examples)
+    
     for example in examples:
-        classifier.classify(example)
         if example.actual == Category.POS and example.predicted == Category.POS:
             true_positives += 1
         elif example.actual == Category.POS and example.predicted == Category.NEG:
