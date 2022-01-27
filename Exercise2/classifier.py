@@ -52,3 +52,7 @@ class Classifier:
 
     def classify(self, example: Example) -> Category:
         pass
+
+    def classify_bulk(self, examples: set[Example]) -> None:
+        for example in examples:
+            self.classify(example)
