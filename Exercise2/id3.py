@@ -1,54 +1,7 @@
-from math import log2
-import re
+import math
 
-from enum import Enum, auto
+from classifier import Example, Category, Classifier
 from timed import timed
-
-
-class Category(Enum):
-    """ Represents a possible Category of an Example """
-
-    NONE = auto()
-    POS = auto()
-    NEG = auto()
-
-    @classmethod
-    def values(cls) -> set['Category']:
-        return {cls.POS, cls.NEG}
-
-
-class Example:
-    """
-    Represents an Example of the data. It can either be a training or a testing Example.
-
-    The `actual` field indicates the actual Category of the Example while the `predicted`
-    one should be determined upon classification. The `attributes` field contains the
-    attributes of the Example, that is, the individual words in it.
-    """
-
-    _ignored_chars = ['"', "'", '.', ',', '>', '<', '\\', '/', '-', '(', ')', ';', ':', '?']
-    _regex = "[%s\\d]" % (re.escape("".join(_ignored_chars)))
-    _ignored_chars_pattern = re.compile(_regex)
-
-    def __init__(self, category: Category, raw_text: str):
-        self.actual: Category = category
-        self.predicted: Category = Category.NONE
-
-        sanitized_text = Example._ignored_chars_pattern.sub("", raw_text, 0)
-        sanitized_text = re.sub("\\s+", " ", sanitized_text)
-        self.attributes: set[str] = set(sanitized_text.split(" "))
-            
-     def copy(self):
-        """
-        Create a new Example with the same attributes (shallow copy) and actual category
-        but with a blank predicted category.
-        """
-        ex = Example(self.actual, "")
-        ex.attributes = self.attributes
-        return ex
-    
-    def __str__(self):
-        return f"{self.actual.name}: {self.attributes}"
 
 
 class Node:
@@ -91,7 +44,7 @@ class Node:
         return Node(category, "")
 
 
-class ID3_Tree:
+class ID3(Classifier):
     """ An ID3 Tree classifier used to classify an Example """
     
     @timed(prompt="Train ID3")
@@ -102,11 +55,11 @@ class ID3_Tree:
         :param examples: the examples on which to train the ID3 classifier
         :param attributes: the attributes that will be used to classify the examples
         """
-        self.root: Node = ID3_Tree.id3_recursive(examples, attributes, Category.NONE)
+        self.root: Node = ID3.id3_recursive(examples, attributes, Category.NONE)
 
     @staticmethod
-    def train(examples: set[Example], attributes: set[str]) -> 'ID3_Tree':
-        return ID3_Tree(examples, attributes)
+    def train(examples: set[Example], attributes: set[str]) -> 'ID3':
+        return ID3(examples, attributes)
 
     def classify(self, test_example: Example) -> Category:
         """
@@ -161,7 +114,7 @@ class ID3_Tree:
             examples_subset = {e for e in examples if (best_attr in e.attributes) == value}
             new_attrs = set(attributes)
             new_attrs.remove(best_attr)
-            subtree = ID3_Tree.id3_recursive(examples_subset, new_attrs, most_common_category)
+            subtree = ID3.id3_recursive(examples_subset, new_attrs, most_common_category)
             root.children[value] = subtree
 
         return root
@@ -245,10 +198,10 @@ def entropy(probability: float) -> float:
     if probability == 0.0 or probability == 1.0:
         return 0.0
 
-    return -probability * log2(probability) - (1 - probability) * log2(1 - probability)
+    return -probability * math.log2(probability) - (1 - probability) * math.log2(1 - probability)
 
 
-def id3_test() -> None:
+def test_id3() -> None:
     e = set()
     p = Category.POS
     n = Category.NEG
@@ -259,19 +212,7 @@ def id3_test() -> None:
     e.add(Example(n, "B C"))
     e.add(Example(n, "C"))
 
-    tree = ID3_Tree(e, {"A", "B", "C"})
-    _preorder(tree.root, 0)
-
-
-def _preorder(node: Node, depth: int) -> None:
-    print(depth, end=" ")
-    if node.category != Category.NONE:
-        print(node.category)
-
-    else:
-        print(node.attribute)
-        for attribute, child in node.children.items():
-            _preorder(child, depth + 1)
+    tree = ID3(e, {"A", "B", "C"})
 
 
 def choose_best_attr_test() -> None:
@@ -291,4 +232,4 @@ def choose_best_attr_test() -> None:
 
 
 if __name__ == "__main__":
-    id3_test()
+    test_id3()

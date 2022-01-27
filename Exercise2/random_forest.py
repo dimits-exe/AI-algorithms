@@ -1,10 +1,11 @@
 import random
 import math
 
-from id3 import Example, Category, ID3_Tree
+from id3 import ID3
+from classifier import Example, Category, Classifier
 
 
-class RandomForest:
+class RandomForest(Classifier):
     """
     A Random Forest classifier internally using ID3 trees to classify examples.
     """
@@ -24,12 +25,12 @@ class RandomForest:
         examples = tuple(examples)
         example_count_per_tree = math.floor(len(examples) * percent_examples_per_tree)
 
-        self.trees: set[ID3_Tree] = set()
+        self.trees: set[ID3] = set()
 
         for _ in range(tree_count):
             # pass copies of the examples, so they properly hold their "predicted" value
             examples_for_tree = {e.copy() for e in random.sample(examples, k=example_count_per_tree)}
-            trained_tree = ID3_Tree.train(set(examples_for_tree), attributes)
+            trained_tree = ID3.train(set(examples_for_tree), attributes)
             self.trees.add(trained_tree)
 
     def classify(self, example: Example) -> Category:
