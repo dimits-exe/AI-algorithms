@@ -1,17 +1,61 @@
-import math
+from math import log2
+import re
 
-from classifier import Example, Category, Classifier
+from enum import Enum, auto
 from timed import timed
+
+
+class Category(Enum):
+    """ Represents a possible Category of an Example """
+
+    NONE = auto()
+    POS = auto()
+    NEG = auto()
+
+    @classmethod
+    def values(cls) -> set['Category']:
+        return {cls.POS, cls.NEG}
+
+
+class Example:
+    """
+    Represents an Example of the data. It can either be a training or a testing Example.
+    The `actual` field indicates the actual Category of the Example while the `predicted`
+    one should be determined upon classification. The `attributes` field contains the
+    attributes of the Example, that is, the individual words in it.
+    """
+
+    _ignored_chars = ['"', "'", '.', ',', '>', '<', '\\', '/', '-', '(', ')', ';', ':', '?']
+    _regex = "[%s\\d]" % (re.escape("".join(_ignored_chars)))
+    _ignored_chars_pattern = re.compile(_regex)
+
+    def __init__(self, category: Category, raw_text: str):
+        self.actual: Category = category
+        self.predicted: Category = Category.NONE
+
+        sanitized_text = Example._ignored_chars_pattern.sub("", raw_text, 0)
+        sanitized_text = re.sub("\\s+", " ", sanitized_text)
+        self.attributes: set[str] = set(sanitized_text.split(" "))
+
+    def copy(self):
+        """
+        Create a new Example with the same attributes (shallow copy) and actual category
+        but with a blank predicted category.
+        """
+        ex = Example(self.actual, "")
+        ex.attributes = self.attributes
+        return ex
+
+    def __str__(self):
+        return f"{self.actual.name}: {self.attributes}"
 
 
 class Node:
     """
     An internal data structure used to construct an ID3 tree and later traverse it.
-
     The `attribute` field indicates the attribute that is being tested at this Node and the
     `children` dictionary contains references to the appropriate Nodes that should be traversed
     based on the value of the `attribute` in an Example.
-
     The `category` field is NONE iff this Node is internal in the tree. A non-NONE value indicates
     that upon reaching this Node, the predicted Category of an Example will be that category.
     """
@@ -26,7 +70,6 @@ class Node:
         """
         Returns an internal Node of an ID3 tree, responsible for an attribute.
         The Node's Category is set to NONE.
-
         :param attribute: the attribute that shall be checked in this Node
         :return: the Node
         """
@@ -37,31 +80,32 @@ class Node:
         """
         Returns a leaf Node of an ID3 tree, responsible for a classification.
         The Node's Attribute is set to "".
-
         :param category: the Category with which Examples will be classified according to this Node
         :return: the Node
         """
         return Node(category, "")
 
 
-class ID3(Classifier):
+class ID3_Tree:
     """ An ID3 Tree classifier used to classify an Example """
     
     @timed(prompt="Train ID3")
     def __init__(self, examples: set[Example], attributes: set[str]):
         """
         Creates a new ID3 classifier by training it on the provided training data.
-
         :param examples: the examples on which to train the ID3 classifier
         :param attributes: the attributes that will be used to classify the examples
         """
-        self.root: Node = ID3.id3_recursive(examples, attributes, Category.NONE)
+        self.root: Node = ID3_Tree.id3_recursive(examples, attributes, Category.NONE)
+
+    @staticmethod
+    def train(examples: set[Example], attributes: set[str]) -> 'ID3_Tree':
+        return ID3_Tree(examples, attributes)
 
     def classify(self, test_example: Example) -> Category:
         """
         Classifies the provided Example by traversing the internal tree based on the
         Example's attributes.The `predicted` Category of the test_example is also updated
-
         :param test_example: The example to be classified
         :return: The predicted Category of the example.
         """
@@ -76,7 +120,6 @@ class ID3(Classifier):
     def id3_recursive(examples: set[Example], attributes: set[str], target_category: Category) -> Node:
         """
         Generates a tree that can classify an example.
-
         :param examples: the set of examples from which the tree will be constructed
         :param attributes: the attributes that will be used to classify the examples
         :param target_category: the most common category among the examples
@@ -110,7 +153,7 @@ class ID3(Classifier):
             examples_subset = {e for e in examples if (best_attr in e.attributes) == value}
             new_attrs = set(attributes)
             new_attrs.remove(best_attr)
-            subtree = ID3.id3_recursive(examples_subset, new_attrs, most_common_category)
+            subtree = ID3_Tree.id3_recursive(examples_subset, new_attrs, most_common_category)
             root.children[value] = subtree
 
         return root
@@ -119,7 +162,6 @@ class ID3(Classifier):
 def choose_best_attr(attributes: set[str], examples: set[Example]) -> str:
     """
     Returns the attribute with the maximum information gain calculated for a set of Examples.
-
     :param attributes: the attributes to be examined for information gain
     :param examples: the examples for which the information gain will be calculated
     :return: the attribute with the maximum information gain for the examples given
@@ -186,7 +228,6 @@ def info_gain(positive_review_ratio: float, examples: set[Example], word: str) -
 def entropy(probability: float) -> float:
     """
     Returns the entropy associated with the probability of an event.
-
     :param probability: the probability of the event
     :return: the entropy of that event
     """
@@ -194,10 +235,10 @@ def entropy(probability: float) -> float:
     if probability == 0.0 or probability == 1.0:
         return 0.0
 
-    return -probability * math.log2(probability) - (1 - probability) * math.log2(1 - probability)
+    return -probability * log2(probability) - (1 - probability) * log2(1 - probability)
 
 
-def test_id3() -> None:
+def id3_test() -> None:
     e = set()
     p = Category.POS
     n = Category.NEG
@@ -208,7 +249,19 @@ def test_id3() -> None:
     e.add(Example(n, "B C"))
     e.add(Example(n, "C"))
 
-    tree = ID3(e, {"A", "B", "C"})
+    tree = ID3_Tree(e, {"A", "B", "C"})
+    _preorder(tree.root, 0)
+
+
+def _preorder(node: Node, depth: int) -> None:
+    print(depth, end=" ")
+    if node.category != Category.NONE:
+        print(node.category)
+
+    else:
+        print(node.attribute)
+        for attribute, child in node.children.items():
+            _preorder(child, depth + 1)
 
 
 def choose_best_attr_test() -> None:
@@ -228,4 +281,4 @@ def choose_best_attr_test() -> None:
 
 
 if __name__ == "__main__":
-    test_id3()
+    id3_test()
