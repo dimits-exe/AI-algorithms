@@ -22,7 +22,7 @@ class Example:
     attributes of the Example, that is, the individual words in it.
     """
 
-    _ignored_chars = ['"', "'", '.', ',', '>', '<', '\\', '/', '-', '(', ')', ';', ':', '?']
+    _ignored_chars = ['"', "'", '.', ',', '>', '<', '\\', '/', '(', ')', ';', ':', '?']
     _regex = "[%s\\d]" % (re.escape("".join(_ignored_chars)))
     _ignored_chars_pattern = re.compile(_regex)
 
@@ -30,9 +30,12 @@ class Example:
         self.actual: Category = category
         self.predicted: Category = Category.NONE
 
-        sanitized_text = Example._ignored_chars_pattern.sub("", raw_text, 0)
-        sanitized_text = re.sub("\\s+", " ", sanitized_text)
-        self.attributes: set[str] = set(sanitized_text.split(" "))
+        raw_attributes = raw_text.split("\\s+")
+        self.attributes: set[str] = {Example.sanitize_attribute(attr) for attr in raw_attributes}
+
+    @classmethod
+    def sanitize_attribute(cls, attribute: str) -> str:
+        return cls._ignored_chars_pattern.sub("", attribute, 0)
 
     def copy(self):
         """
@@ -52,6 +55,6 @@ class Classifier:
     def classify(self, example: Example) -> Category:
         pass
 
-    def classify_bulk(self, examples: set[Example]) -> None:
+    def classify_bulk(self, examples: tuple[Example]) -> None:
         for example in examples:
             self.classify(example)
