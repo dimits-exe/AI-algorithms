@@ -24,7 +24,6 @@ class Node:
         """
         Returns an internal Node of an ID3 tree, responsible for an attribute.
         The Node's Category is set to NONE.
-
         :param attribute: the attribute that shall be checked in this Node
         :return: the Node
         """
@@ -35,7 +34,6 @@ class Node:
         """
         Returns a leaf Node of an ID3 tree, responsible for a classification.
         The Node's Attribute is set to "".
-
         :param category: the Category with which Examples will be classified according to this Node
         :return: the Node
         """
@@ -45,24 +43,33 @@ class Node:
 class ID3(Classifier):
     """ An ID3 Tree classifier used to classify an Example """
 
-    @timed(prompt="Train ID3")
-    def __init__(self, examples: set[Example], attributes: set[str], cutoff: float):
-        """
-        Creates a new ID3 classifier by training it on the provided training data.
+    cutoff = 0.95
 
+    @classmethod
+    @timed(prompt="Train ID3")
+    def create_timed(cls, examples: set[Example], attributes: set[str]):
+        """
+        A timed wrapper for the creation of an ID3 tree.
         :param examples: the examples on which to train the ID3 classifier
         :param attributes: the attributes that will be used to classify the examples
-        :param cutoff: if cutoff_point% training examples or more belong in one of the leaf nodes, the algorithm will
+        cease expanding the tree
+        :return: a new ID3 tree
+        """
+        return ID3(examples, attributes)
+
+    def __init__(self, examples: set[Example], attributes: set[str]):
+        """
+        Creates a new ID3 classifier by training it on the provided training data.
+        :param examples: the examples on which to train the ID3 classifier
+        :param attributes: the attributes that will be used to classify the examples
         cease expanding the tree
         """
-        self.cutoff = cutoff
         self.root: Node = self.id3_recursive(examples, attributes, Category.NONE)
 
     def classify(self, test_example: Example) -> Category:
         """
         Classifies the provided Example by traversing the internal tree based on the
         Example's attributes.The `predicted` Category of the test_example is also updated
-
         :param test_example: The example to be classified
         :return: The predicted Category of the example.
         """
@@ -76,7 +83,6 @@ class ID3(Classifier):
     def id3_recursive(self, examples: set[Example], attributes: set[str], target_category: Category) -> Node:
         """
         Generates a tree that can classify an example.
-
         :param examples: the set of examples from which the tree will be constructed
         :param attributes: the attributes that will be used to classify the examples
         :param target_category: the most common category among the examples
@@ -110,7 +116,7 @@ class ID3(Classifier):
             examples_subset = {e for e in examples if (best_attr in e.attributes) == value}
 
             # if sufficient categorization, end the tree expansion early
-            if len(examples_subset) / len(examples) > self.cutoff:
+            if len(examples_subset) / len(examples) > ID3.cutoff:
                 return Node.leaf(most_common_category)
 
             attributes_subset = {a for a in attributes if a != best_attr}
@@ -123,7 +129,6 @@ class ID3(Classifier):
 def choose_best_attr(attributes: set[str], examples: set[Example]) -> str:
     """
     Returns the attribute with the maximum information gain calculated for a set of Examples.
-
     :param attributes: the attributes to be examined for information gain
     :param examples: the examples for which the information gain will be calculated
     :return: the attribute with the maximum information gain for the examples given
@@ -144,7 +149,6 @@ def choose_best_attr(attributes: set[str], examples: set[Example]) -> str:
 def info_gain(examples: set[Example], attribute: str) -> float:
     """
     Returns the information gain of an attribute in a set of Examples.
-
     :param examples: the set of examples among which to calculate the information gain
     :param attribute: the attribute for which to calculate the information gain
     :return: the information gain of that word in the examples
@@ -179,7 +183,6 @@ def info_gain(examples: set[Example], attribute: str) -> float:
 def entropy(probability: float) -> float:
     """
     Returns the entropy associated with the probability of an event.
-
     :param probability: the probability of the event being true
     :return: the entropy of that event
     """
