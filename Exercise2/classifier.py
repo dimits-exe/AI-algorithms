@@ -30,7 +30,7 @@ class Example:
         self.actual: Category = category
         self.predicted: Category = Category.NONE
 
-        raw_attributes = raw_text.split("\\s+")
+        raw_attributes = raw_text.split(" ")
         self.attributes: set[str] = {Example.sanitize_attribute(attr) for attr in raw_attributes}
 
     @classmethod
