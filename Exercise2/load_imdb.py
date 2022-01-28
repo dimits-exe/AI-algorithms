@@ -1,7 +1,7 @@
 import os
-
-from classifier import Example, Category
+from id3 import Example, Category
 from timed import timed
+import re
 
 
 @timed(prompt="Load Data")
@@ -10,36 +10,13 @@ def load_examples(directory: str, sample_size=5000) -> set[Example]:
     pos_dir_path = os.path.join(directory, "pos")
 
     examples = set()
-    examples |= _load_examples_of_category(neg_dir_path, Category.POS, sample_size // 2)
-    examples |= _load_examples_of_category(pos_dir_path, Category.NEG, sample_size // 2)
+    examples |= _load_examples(neg_dir_path, Category.POS, sample_size // 2)
+    examples |= _load_examples(pos_dir_path, Category.NEG, sample_size // 2)
 
     return examples
 
 
-@timed(prompt="Load Attributes")
-def load_attributes(filename: str, most_frequent_count: int, ignored_count: int) -> tuple[str]:
-    """
-    Loads the m most frequent attributes from a file, ignoring the first n.
-    The attributes in the file are sorted by frequency in descending order
-
-    :param filename: the file containing the attributes
-    :param most_frequent_count: the number of most frequent attributes to read
-    :param ignored_count: the number of most frequent attributes to ignore
-    """
-
-    attributes = list()
-
-    with open(filename, mode='r', encoding="utf8") as f:
-        for _ in range(ignored_count):
-            f.readline()
-        for _ in range(most_frequent_count):
-            attribute = f.readline().strip('\n')
-            attributes.append(Example.sanitize_attribute(attribute))
-
-    return tuple(attributes)
-
-
-def _load_examples_of_category(directory: str, category: Category, sample_size: int) -> set[Example]:
+def _load_examples(directory: str, category: Category, sample_size: int) -> set[Example]:
     print(f"Loading {category.name} data")
     files = os.listdir(directory)
     sep = os.sep
@@ -55,9 +32,26 @@ def _load_examples_of_category(directory: str, category: Category, sample_size: 
 
         examples.add(Example(category, contents))
 
-        if one_tenth_progress != 0 and (count + 1) % one_tenth_progress == 0:  # `count` is 0-indexed
+        if (count + 1) % one_tenth_progress == 0:  # `count` is 0-indexed
             print('\b' * 20 + "%d%% complete..." % ((count + 1) // one_tenth_progress * 10), end="")
 
     print()
 
     return examples
+
+
+@timed(prompt="Load Attributes")
+def load_attributes(filename: str, most_freq: int, ignored: int) -> set[str]:
+
+    attributes = list()
+
+    with open(filename, mode='r', encoding="utf8") as f:
+        for _ in range(ignored):
+            f.readline()
+        for _ in range(most_freq):
+            attribute = f.readline().strip('\n')
+            sanitized_attribute = Example._ignored_chars_pattern.sub("", attribute, 0)
+            sanitized_attribute = re.sub("\\s+", " ", sanitized_attribute)
+            attributes.append(sanitized_attribute)
+
+    return set(attributes)
