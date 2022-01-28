@@ -38,3 +38,7 @@ class ClassifierEvaluation:
         self.specificity = self.recall_neg
         self.true_positive_rate = self.sensitivity
         self.false_positive_rate = 1 - self.specificity
+
+    def __str__(self):
+        return f"Accuracy: {self.accuracy_true}\nPrecision: {self.precision_pos}\n" \
+               f"Recall: {self.recall_pos}\nF Measure (b=0.5): {self.f_measure_pos}\n"
