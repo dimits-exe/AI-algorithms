@@ -21,10 +21,12 @@ class TestStats:
         A metric representing the % of correctly identified test data.
         :return:  a value between [0,1] representing the accuracy of the test
         """
+
         if self.data_size == 0:
             return 0
         else:
-            return self.true_positives / self.data_size
+            # TODO: add self.true_negatives
+            return (self.true_positives + self.true_negatives) / self.data_size
 
     def precision(self) -> float:
         """
