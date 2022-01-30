@@ -8,6 +8,14 @@ from timed import timed
 import os
 import sys
 
+class TestResults:
+    def __init__(self, id3_train_results: TestStats, id3_test_results: TestStats, forest_train_results: TestStats,
+                 forest_test_results: TestStats):
+        self.id3_train_results = id3_train_results
+        self.id3_test_results = id3_test_results
+        self.forest_train_results = forest_train_results
+        self.forest_test_results = forest_test_results
+
 
 def test_classifier(classifier: Classifier, examples: set[Example]) -> TestStats:
     """
@@ -36,7 +44,21 @@ def test_classifier(classifier: Classifier, examples: set[Example]) -> TestStats
     return TestStats(true_negatives, true_positives, false_positives, false_negatives)
 
 
-@timed(prompt= "Main program")
+def main_test(train_data_dir: str, test_data_dir: str, vocab_file_dir: str,
+              example_size: int, attr_count: int, ignore_attr_count: int) -> TestResults:
+
+    train_data = load_examples(train_data_dir, example_size)
+    testing_data = load_examples(test_data_dir, example_size)
+    attributes = load_attributes(vocab_file_dir, attr_count, ignore_attr_count)
+
+    id3 = ID3.create_timed(train_data, attributes)
+    rand_forest = RandomForest(train_data, attributes, 0.1)
+
+    return TestResults(test_classifier(id3, train_data), test_classifier(id3, testing_data),
+                       test_classifier(rand_forest, train_data), test_classifier(rand_forest, testing_data))
+
+
+@timed(prompt="Main program")
 def main() -> None:
     def check_int_arg(arg: str, param_name: str, bottom_limit: int, upper_limit: int) -> int:
         try:
@@ -57,9 +79,7 @@ def main() -> None:
               " <number of ignored words> <number of words to be considered>")
     else:
         data_dir = sys.argv[1]
-        print(data_dir)
         train_data_dir = os.path.join(data_dir, "train")
-        print(train_data_dir)
         test_data_dir = os.path.join(data_dir, "test")
         vocab_file_name = os.path.join(data_dir, "imdb.vocab")
 
@@ -67,17 +87,11 @@ def main() -> None:
         ignore_attr_count = check_int_arg(sys.argv[3], "ignored words count", 0, 90000)
         attr_count = check_int_arg(sys.argv[4], "total word count", 5, 90000)
 
-        train_data = load_examples(train_data_dir, example_size)
-        testing_data = load_examples(test_data_dir, example_size)
-        attributes = load_attributes(vocab_file_name, attr_count, ignore_attr_count)
-
-        id3 = ID3.create_timed(train_data, attributes)
-        print("ID3 training results: ", test_classifier(id3, train_data))
-        print("ID3 testing results: ",  test_classifier(id3, testing_data))
-
-        rand_forest = RandomForest(train_data, attributes, 0.1)
-        print("Random Forest training results: ", test_classifier(rand_forest, train_data))
-        print("Random Forest testing results: ", test_classifier(rand_forest, testing_data))
+        results = main_test(train_data_dir, test_data_dir, vocab_file_name, example_size, attr_count, ignore_attr_count)
+        print("ID3 training results: ", results.id3_train_results)
+        print("ID3 testing results: ", results.id3_test_results)
+        print("Random Forest training results: ", results.forest_train_results)
+        print("Random Forest testing results: ", results.forest_test_results)
 
 
 if __name__ == "__main__":
