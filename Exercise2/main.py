@@ -5,6 +5,7 @@ from test_stats import TestStats
 from classifier import Classifier
 from timed import timed
 
+from multiprocessing import Process
 import os
 import sys
 
@@ -36,7 +37,53 @@ def test_classifier(classifier: Classifier, examples: set[Example]) -> TestStats
     return TestStats(true_negatives, true_positives, false_positives, false_negatives)
 
 
-@timed(prompt= "Main program")
+def test_id3(train_data, testing_data, attributes):
+    id3 = ID3.create_timed(train_data, attributes)
+    test_train_id3_process = Process(target=test_and_print, args=("ID3 training results: ", id3, train_data))
+    test_test_id3_process = Process(target=test_and_print, args=("ID3 testing results: ", id3, testing_data))
+
+    test_train_id3_process.start()
+    test_test_id3_process.start()
+
+    test_train_id3_process.join()
+    test_test_id3_process.join()
+
+
+def test_rand_forest(train_data, testing_data, attributes):
+    rand_forest = RandomForest(train_data, attributes, 0.1)
+
+    test_train_rand_forest_process = Process(target=test_and_print,
+                                             args=("Random Forest training results: ", rand_forest, train_data))
+    test_test_rand_forest_process = Process(target=test_and_print,
+                                            args=("Random Forest testing results: ", rand_forest, testing_data))
+    test_train_rand_forest_process.start()
+    test_test_rand_forest_process.start()
+
+    test_train_rand_forest_process.join()
+    test_test_rand_forest_process.join()
+
+
+def test_and_print(prompt: str, classifier: Classifier, examples: set[Example]):
+    print(prompt, test_classifier(classifier, examples))
+
+
+def main_test(train_data_dir: str, test_data_dir: str, vocab_file_dir: str,
+              example_size: int, attr_count: int, ignore_attr_count: int) -> None:
+
+    train_data = load_examples(train_data_dir, example_size)
+    testing_data = load_examples(test_data_dir, example_size)
+    attributes = load_attributes(vocab_file_dir, attr_count, ignore_attr_count)
+
+    create_id3_process = Process(target=test_id3, args=(train_data, testing_data, attributes))
+    create_rand_forest_process = Process(target=test_rand_forest, args=(train_data, testing_data, attributes))
+
+    create_rand_forest_process.start()
+    create_id3_process.start()
+    create_rand_forest_process.join()
+    create_id3_process.join()
+
+
+@timed(prompt="Main program")
 def main() -> None:
     def check_int_arg(arg: str, param_name: str, bottom_limit: int, upper_limit: int) -> int:
         try:
@@ -57,9 +104,7 @@ def main() -> None:
               " <number of ignored words> <number of words to be considered>")
     else:
         data_dir = sys.argv[1]
-        print(data_dir)
         train_data_dir = os.path.join(data_dir, "train")
-        print(train_data_dir)
         test_data_dir = os.path.join(data_dir, "test")
         vocab_file_name = os.path.join(data_dir, "imdb.vocab")
 
@@ -67,17 +112,7 @@ def main() -> None:
         ignore_attr_count = check_int_arg(sys.argv[3], "ignored words count", 0, 90000)
         attr_count = check_int_arg(sys.argv[4], "total word count", 5, 90000)
 
-        train_data = load_examples(train_data_dir, example_size)
-        testing_data = load_examples(test_data_dir, example_size)
-        attributes = load_attributes(vocab_file_name, attr_count, ignore_attr_count)
-
-        id3 = ID3.create_timed(train_data, attributes)
-        print("ID3 training results: ", test_classifier(id3, train_data))
-        print("ID3 testing results: ",  test_classifier(id3, testing_data))
-
-        rand_forest = RandomForest(train_data, attributes, 0.1)
-        print("Random Forest training results: ", test_classifier(rand_forest, train_data))
-        print("Random Forest testing results: ", test_classifier(rand_forest, testing_data))
+        main_test(train_data_dir, test_data_dir, vocab_file_name, example_size, attr_count, ignore_attr_count)
 
 
 if __name__ == "__main__":
