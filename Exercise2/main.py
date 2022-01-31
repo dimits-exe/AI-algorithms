@@ -1,12 +1,13 @@
-from load_imdb import load_examples, load_attributes, Example
-from id3 import Category, ID3
+from load_imdb import load_examples, load_attributes
+from id3 import ID3
 from random_forest import RandomForest
 from test_stats import TestStats
-from classifier import Classifier
+from classifier import Classifier, Category, Example
 from timed import timed
 
 import os
 import sys
+
 
 class TestResults:
     def __init__(self, id3_train_results: TestStats, id3_test_results: TestStats, forest_train_results: TestStats,
@@ -46,13 +47,12 @@ def test_classifier(classifier: Classifier, examples: set[Example]) -> TestStats
 
 def main_test(train_data_dir: str, test_data_dir: str, vocab_file_dir: str,
               example_size: int, attr_count: int, ignore_attr_count: int) -> TestResults:
-
     train_data = load_examples(train_data_dir, example_size)
     testing_data = load_examples(test_data_dir, example_size)
     attributes = load_attributes(vocab_file_dir, attr_count, ignore_attr_count)
 
     id3 = ID3.create_timed(train_data, attributes)
-    rand_forest = RandomForest(train_data, attributes, 0.1)
+    rand_forest = RandomForest.create_timed(train_data, attributes)
 
     return TestResults(test_classifier(id3, train_data), test_classifier(id3, testing_data),
                        test_classifier(rand_forest, train_data), test_classifier(rand_forest, testing_data))
@@ -62,16 +62,16 @@ def main_test(train_data_dir: str, test_data_dir: str, vocab_file_dir: str,
 def main() -> None:
     def check_int_arg(arg: str, param_name: str, bottom_limit: int, upper_limit: int) -> int:
         try:
-            answer = int(arg)
+            number = int(arg)
         except ValueError:
-            answer = -1
+            number = -1
 
-        if answer < bottom_limit or answer > upper_limit:
+        if number < bottom_limit or number > upper_limit:
             print(f"Error: parameter `{param_name}` must be a valid integer within the "
                   f"[{bottom_limit}, {upper_limit}] range")
             sys.exit(1)
         else:
-            return answer
+            return number
 
     if len(sys.argv) < 5:
         print("Insufficient parameters:")
@@ -86,6 +86,12 @@ def main() -> None:
         example_size = check_int_arg(sys.argv[2], "example size", 100, 250000)
         ignore_attr_count = check_int_arg(sys.argv[3], "ignored words count", 0, 90000)
         attr_count = check_int_arg(sys.argv[4], "total word count", 5, 90000)
+
+        if attr_count > 200:
+            answer = input("Warning: Giving more than 200 words as attributes is likely to make the algorithm "
+                           "incredibly inconsistent. Are you sure you want to proceed? (y/n)")
+            if answer.lower() != "y":
+                sys.exit(0)
 
         results = main_test(train_data_dir, test_data_dir, vocab_file_name, example_size, attr_count, ignore_attr_count)
         print("ID3 training results: ", results.id3_train_results)
