@@ -8,7 +8,7 @@ def timed(prompt: str):
             start = time.perf_counter()
             rv = func(*args, **kwargs)
             end = time.perf_counter()
-            print(f"Finished after {end - start} seconds")
+            print(f"Process `{prompt}` finished after {end - start} seconds\n")
             return rv
         return inner
     return decorator
