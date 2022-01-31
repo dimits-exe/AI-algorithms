@@ -1,9 +1,7 @@
 import os
 
 from timed import timed
-
 from load_imdb import load_examples, load_attributes
-
 from id3 import entropy
 
 
@@ -46,7 +44,61 @@ def test_entropy(*probabilities: float) -> list[float]:
 
     return entropies
 
+def find_best_cutoff():
+    max_accuracy = -1
+    max_cutoff = -1
+
+    examples = 20000
+    ignored_attrs = 25
+    count_attrs = 200
+    data_dir = sys.argv[1]
+
+    example_list: list[Example] = list(load_examples(os.path.join(data_dir, "train"), examples))
+    test_examples: set[Example] = set(example_list[:len(example_list)//2])
+    train_examples: set[Example] = set(example_list[len(example_list)//2:])
+
+    attributes: set[str] = load_attributes(os.path.join(sys.argv[1], "imdb.vocab"), count_attrs, ignored_attrs)
+
+    for i in range(70, 100, 1):
+        ID3.cutoff = i/100
+        id3 = ID3(train_examples, attributes)
+        results = test_classifier(id3, test_examples)
+
+        if results.accuracy() > max_accuracy:
+            max_accuracy = results.accuracy()
+            max_cutoff = i/100
+
+    return max_cutoff, max_accuracy
+
+
+def find_best_tree_count():
+    max_accuracy = -1
+    max_cutoff = -1
+
+    examples = 10000
+    ignored_attrs = 25
+    count_attrs = 200
+    data_dir = sys.argv[1]
+
+    example_list: list[Example] = list(load_examples(os.path.join(data_dir, "train"), examples))
+    test_examples: set[Example] = set(example_list[:len(example_list)//2])
+    train_examples: set[Example] = set(example_list[len(example_list)//2:])
+
+    attributes: set[str] = load_attributes(os.path.join(sys.argv[1], "imdb.vocab"), count_attrs, ignored_attrs)
+
+    for i in range(70, 201, 5):
+        RandomForest.tree_count = i
+        rand_forest = RandomForest(train_examples, attributes)
+        results = test_classifier(rand_forest, test_examples)
+
+        if results.accuracy() > max_accuracy:
+            max_accuracy = results.accuracy()
+            max_cutoff = i
+
+        print("Trying", i, "trees, accuracy=", results.accuracy())
+
+    return max_cutoff, max_accuracy
+
 
 if __name__ == '__main__':
-    # test_load(5, 3, 10)
-    test_entropy()
+    print(find_best_tree_count())
