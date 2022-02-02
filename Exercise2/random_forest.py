@@ -15,7 +15,7 @@ class RandomForest(Classifier):
     examples_per_tree = 1 - 1 / math.exp(1)
 
     @classmethod
-    # @timed(prompt="Train Random Forest")
+    @timed(prompt="Train Random Forest")
     def create_timed(cls, examples: set[Example], attributes: set[str]):
         return RandomForest(examples, attributes)
 
