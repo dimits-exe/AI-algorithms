@@ -4,7 +4,7 @@ from timed import timed
 import re
 
 
-@timed(prompt="Load Data")
+# @timed(prompt="Load Data")
 def load_examples(directory: str, sample_size=5000) -> set[Example]:
     neg_dir_path = os.path.join(directory, "neg")
     pos_dir_path = os.path.join(directory, "pos")
@@ -17,7 +17,7 @@ def load_examples(directory: str, sample_size=5000) -> set[Example]:
 
 
 def _load_examples(directory: str, category: Category, sample_size: int) -> set[Example]:
-    print(f"Loading {category.name} data")
+    # print(f"Loading {category.name} data")
     files = os.listdir(directory)
     sep = os.sep
     examples = set()
@@ -33,14 +33,15 @@ def _load_examples(directory: str, category: Category, sample_size: int) -> set[
         examples.add(Example(category, contents))
 
         if (count + 1) % one_tenth_progress == 0:  # `count` is 0-indexed
-            print('\b' * 20 + "%d%% complete..." % ((count + 1) // one_tenth_progress * 10), end="")
+            pass
+            # print('\b' * 20 + "%d%% complete..." % ((count + 1) // one_tenth_progress * 10), end="")
 
-    print()
+    # print()
 
     return examples
 
 
-@timed(prompt="Load Attributes")
+# @timed(prompt="Load Attributes")
 def load_attributes(filename: str, most_freq: int, ignored: int) -> set[str]:
 
     attributes = list()

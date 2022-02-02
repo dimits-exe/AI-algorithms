@@ -3,7 +3,7 @@ from id3 import ID3
 from random_forest import RandomForest
 from test_stats import TestStats
 from classifier import Classifier, Category, Example
-from timed import timed
+from timed import timed, timed2
 
 import os
 import sys
@@ -45,6 +45,7 @@ def test_classifier(classifier: Classifier, examples: set[Example]) -> TestStats
     return TestStats(true_negatives, true_positives, false_positives, false_negatives)
 
 
+# @timed2()
 def main_test(train_data_dir: str, test_data_dir: str, vocab_file_dir: str,
               example_size: int, attr_count: int, ignore_attr_count: int) -> TestResults:
     train_data = load_examples(train_data_dir, example_size)

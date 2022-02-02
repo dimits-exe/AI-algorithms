@@ -15,7 +15,7 @@ class RandomForest(Classifier):
     examples_per_tree = 1 - 1 / math.exp(1)
 
     @classmethod
-    @timed(prompt="Train Random Forest")
+    # @timed(prompt="Train Random Forest")
     def create_timed(cls, examples: set[Example], attributes: set[str]):
         return RandomForest(examples, attributes)
 
@@ -31,7 +31,8 @@ class RandomForest(Classifier):
         # convert sets to tuples for sampling efficiency
         examples = tuple(examples)
         attributes = tuple(attributes)
-        attributes_per_tree = math.floor(math.sqrt(len(examples)))
+        # attributes_per_tree = math.floor(math.sqrt(len(examples)))
+        attributes_per_tree = min(len(attributes), math.floor(math.sqrt(len(examples))))
         examples_per_tree = math.floor(len(examples) * RandomForest.examples_per_tree)
 
         self.trees: set[ID3] = set()

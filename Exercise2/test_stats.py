@@ -58,10 +58,10 @@ class TestStats:
         :param b: a weight between [0,1]. Values close to 0 emphasize precision, values close to 1 emphasize recall.
         :return:  a value representing the overall fitness of a class in a given test
         """
-        if self.precision() == 0 or self.recall() == 0:
+        if self.precision() == 0 and self.recall() == 0:
             return 0
         else:
-            return (b ** 2 + 1) * self.precision() * self.recall() / (b ** 2 * self.precision() * self.recall())
+            return ((b ** 2 + 1) * self.precision() * self.recall()) / (b ** 2 * self.precision() + self.recall())
 
     def __str__(self):
         return "\n" + 25 * "*" + f"\nAccuracy: {self.accuracy()}\nPrecision: {self.precision()}\n" \
