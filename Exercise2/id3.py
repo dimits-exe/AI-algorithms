@@ -46,7 +46,7 @@ class ID3(Classifier):
     cutoff = 0.95
 
     @classmethod
-    # @timed(prompt="Train ID3")
+    @timed(prompt="Train ID3")
     def create_timed(cls, examples: set[Example], attributes: set[str]):
         """
         A timed wrapper for the creation of an ID3 tree.
