@@ -34,9 +34,9 @@ def _load_examples(directory: str, category: Category, sample_size: int) -> set[
 
         if (count + 1) % one_tenth_progress == 0:  # `count` is 0-indexed
             pass
-            # print('\b' * 20 + "%d%% complete..." % ((count + 1) // one_tenth_progress * 10), end="")
+            print('\b' * 20 + "%d%% complete..." % ((count + 1) // one_tenth_progress * 10), end="")
 
-    # print()
+    print()
 
     return examples
 
