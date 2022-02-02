@@ -1,0 +1,14 @@
+
+# Visual Studio files
+.vs/
+AI-algorithms.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# PyCharm files
+*/.idea/
+*/__pycache__/
+
+resources/
+
